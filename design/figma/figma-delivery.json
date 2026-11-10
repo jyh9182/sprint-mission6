@@ -38,7 +38,7 @@
     "Allow only the explicit Figma preview hostname for Next development connections",
     "Keep interactive buttons disabled until client initialization completes"
   ],
-  "reviewDirectory": "review",
+  "reviewDirectory": "design/screenshots",
   "handoff": {"workspace":"lessonconnect-landing.code-workspace","instructions":"CLAUDE.md"},
   "published": false,
   "liveServicesConnected": false,
