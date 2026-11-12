@@ -205,3 +205,28 @@ dialog.lc-dialog::backdrop{background:var(--lc-backdrop);backdrop-filter:none}
 .lc-detail-image__img{width:var(--lc-image-detail);height:var(--lc-image-detail);flex-shrink:0;object-fit:cover;border-radius:var(--lc-radius-compact);background:var(--lc-surface)}
 .lc-detail-image__meta{display:flex;flex-direction:column;gap:var(--lc-space-2);min-width:0}
 .lc-detail-image__name,.lc-detail-image__size{font-size:12px;line-height:18px;color:var(--lc-muted);overflow-wrap:anywhere}
+/* ── 10단계 앱 홈(/home): 다가오는 레슨 · 강사 예시. Figma 01_Home_Reference(23:67)의 카드 톤(20px radius·민트 배지)을 따른다 ── */
+:root{--lc-mint:#ddf8ef;--lc-mint-ink:#08795e;--lc-home-photo-width:96px;--lc-home-photo-height:112px}
+.lc-home-header{display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:var(--lc-header-height);padding:var(--lc-space-2) 0}
+.lc-home-header__title{font-size:22px;line-height:30px;font-weight:700;letter-spacing:-.6px}
+.lc-home-header__tagline{font-size:12px;line-height:18px;color:var(--lc-muted)}
+.lc-home{display:flex;flex-direction:column;gap:var(--lc-space-6)}
+.lc-home-section{display:flex;flex-direction:column;gap:var(--lc-space-3);min-width:0}
+.lc-home-section__head{display:flex;align-items:center;justify-content:space-between;gap:var(--lc-space-2)}
+.lc-home-section__title{font-size:20px;line-height:29px;font-weight:700;letter-spacing:-.2px}
+.lc-home-section__more,.lc-home-link{display:inline-flex;align-items:center;min-height:var(--lc-hit-target);border-radius:var(--lc-radius-control);font-size:12px;line-height:18px;font-weight:500;color:var(--lc-muted)}
+.lc-home-link{min-height:0;text-decoration:underline;text-underline-offset:2px}
+.lc-home-card{display:flex;flex-direction:column;gap:var(--lc-space-2);min-width:0;padding:var(--lc-space-4);border:var(--lc-stroke) solid var(--lc-border);border-radius:var(--lc-radius-card);background:var(--lc-white);color:var(--lc-ink)}
+.lc-home-card--state{align-items:flex-start}
+.lc-home-card--error .lc-alert{max-width:none}
+.lc-home-card__row{display:flex;align-items:flex-start;gap:var(--lc-space-2)}
+.lc-home-card__row img{flex-shrink:0;margin-top:2px}
+.lc-home-card__title{min-width:0;font-size:16px;line-height:24px;font-weight:700;letter-spacing:-.16px}
+.lc-home-card__meta{font-size:14px;line-height:21px;color:var(--lc-muted)}
+.lc-home-card__note{font-size:11px;line-height:16px;color:var(--lc-muted)}
+.lc-home-card__foot{display:flex;justify-content:space-between;gap:var(--lc-space-2);font-size:12px;line-height:18px;font-weight:500;color:var(--lc-muted)}
+.lc-home-card__action{width:100%;margin-top:var(--lc-space-1)}
+.lc-home-instructor__body{display:flex;align-items:flex-start;gap:var(--lc-space-4);min-width:0}
+.lc-home-instructor__photo{width:var(--lc-home-photo-width);height:var(--lc-home-photo-height);flex-shrink:0;object-fit:cover;border-radius:var(--lc-radius-compact);background:var(--lc-surface)}
+.lc-home-instructor__info{display:flex;flex-direction:column;align-items:flex-start;gap:var(--lc-space-1);min-width:0}
+.lc-home-badge{display:inline-flex;align-items:center;height:24px;padding:0 var(--lc-space-2);border-radius:var(--lc-radius-full);background:var(--lc-mint);color:var(--lc-mint-ink);font-size:12px;line-height:18px;font-weight:700}

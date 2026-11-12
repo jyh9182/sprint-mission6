@@ -249,7 +249,7 @@ test('하단 내비: 예약 탭 현재 위치, 준비 중 탭은 링크 아님',
   const nav = page.getByRole('navigation', { name: '앱 메뉴' });
   await expect(nav.getByRole('link', { name: '예약' })).toHaveAttribute('aria-current', 'page');
   await expect(nav.getByRole('link', { name: '예약' })).toHaveAttribute('href', '/bookings');
-  await expect(nav.getByRole('link', { name: '홈' })).toHaveAttribute('href', '/');
+  await expect(nav.getByRole('link', { name: '홈' })).toHaveAttribute('href', '/home');
   await expect(nav.getByRole('link')).toHaveCount(2);
   await expect(nav.getByText('찾기')).toBeVisible();
   await expect(nav.getByText('마이')).toBeVisible();

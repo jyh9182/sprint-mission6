@@ -238,7 +238,7 @@ test('저장 실패(용량 초과·쓰기 실패): 이동 없이 입력 유지, 
   await submit(page).click();
   const alert = page.locator('.lc-alert--error');
   await expect(alert).toContainText('예약을 저장하지 못했어요');
-  await expect(alert).toContainText('브라우저 저장 공간이 부족해요. 입력과 기존 이미지는 유지했어요.');
+  await expect(alert).toContainText('브라우저 저장 공간이 부족해요. 작성한 내용은 유지했어요.');
   await expect(alert).toBeInViewport(); // 스크롤 위치를 바꾸지 않아도 보이는 고정 알림
   expect(Math.abs((await memoY()) - memoBefore)).toBeLessThanOrEqual(1); // 보던 입력 위치 유지(맨 위로 튀지 않음)
   await expect(page).toHaveURL(new URL(NEW_PATH, base).toString());

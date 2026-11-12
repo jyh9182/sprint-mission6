@@ -14,7 +14,7 @@ const MSG = {
   type: 'JPEG, PNG, WebP 이미지만 첨부할 수 있어요.',
   size: '원본 이미지는 2MB 이하만 첨부할 수 있어요.',
   decode: '이미지를 열 수 없어요. 다른 파일을 선택해주세요.',
-  quota: '브라우저 저장 공간이 부족해요. 입력과 기존 이미지는 유지했어요.',
+  quota: '브라우저 저장 공간이 부족해요. 기존 예약과 편집 중인 내용은 유지했어요.',
 };
 
 const seoulDate = (ms: number) => new Date(ms + 9 * HOUR).toISOString().slice(0, 10);

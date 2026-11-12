@@ -252,7 +252,7 @@ test('저장 실패(용량 초과·쓰기 실패): 이동 없이 편집값·체�
   await save(page).click();
   const alert = page.locator('.lc-alert--error');
   await expect(alert).toContainText('변경 내용을 저장하지 못했어요');
-  await expect(alert).toContainText('브라우저 저장 공간이 부족해요. 입력과 기존 이미지는 유지했어요.');
+  await expect(alert).toContainText('브라우저 저장 공간이 부족해요. 기존 예약과 편집 중인 내용은 유지했어요.');
   await expect(page).toHaveURL(editUrl(b.id));
   await expect(field(page, '메모 (선택)')).toHaveValue('실패해도 남는 메모');
   await expect(field(page, '레슨 공간 (필수)')).toHaveValue('space-dongtan-b');

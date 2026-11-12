@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { BookingForm } from '@/components/bookings/booking-form';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -9,10 +9,10 @@ import { InlineAlert } from '@/components/ui/inline-alert';
 import { PageHeader } from '@/components/ui/page-header';
 import { getBookingCatalog } from '@/lib/bookings/catalog';
 import { setBookingFlash } from '@/lib/bookings/flash';
-import { EMPTY_BOOKING_FORM, mapSaveError, type BookingFormSubmitResult } from '@/lib/bookings/form';
+import { EMPTY_BOOKING_FORM, findSelectableOffer, mapSaveError, type BookingFormSubmitResult, type BookingFormValues } from '@/lib/bookings/form';
 import { ERROR_MESSAGES } from '@/lib/bookings/messages';
 import { getBookingRepository } from '@/lib/bookings/repository';
-import { bookingDetailHref, BOOKINGS_HREF } from '@/lib/bookings/routes';
+import { bookingDetailHref, BOOKINGS_HREF, HOME_HREF, parseNewBookingEntry, type NewBookingEntry } from '@/lib/bookings/routes';
 import type { BookingInput, StoreError } from '@/lib/bookings/types';
 import { useLeaveGuard } from '@/lib/bookings/use-leave-guard';
 
@@ -22,7 +22,29 @@ import { useLeaveGuard } from '@/lib/bookings/use-leave-guard';
 
 type InitState = { status: 'preparing' } | { status: 'ready' } | { status: 'error'; error: StoreError };
 
-export function BookingCreateScreen() {
+/**
+ * 10단계: URL의 진입 문맥을 읽는다(정적 export라 Suspense 안 클라이언트에서만 읽힌다).
+ * - `?offerId=`: 활성 카탈로그 상품이면 상품만 사전 선택한다. 날짜·시각·공간·확인 체크는 비워 둔다.
+ *   없거나 비활성인 ID는 다른 상품으로 대체하지 않고 빈 선택 + 오류 안내를 보인다.
+ * - `?from=home`: 뒤로가기·이탈 목적지를 앱 홈으로 한다. 그 밖의 값은 목록.
+ */
+export function BookingCreateFromQuery() {
+  const params = useSearchParams();
+  const { offerId, from } = parseNewBookingEntry(params);
+  return <BookingCreateScreen key={`${from}:${offerId ?? ''}`} offerId={offerId} from={from} />;
+}
+
+/** Suspense fallback: 쿼리를 읽기 전 정적 HTML. 저장소를 읽지 않고 준비 중 폼만 보인다. */
+export function BookingCreateLoading() {
+  return <BookingCreateScreen offerId={null} from="list" staticShell />;
+}
+
+const BACK: Record<NewBookingEntry, { href: string; label: string }> = {
+  list: { href: BOOKINGS_HREF, label: '예약 목록으로 돌아가기' },
+  home: { href: HOME_HREF, label: '홈으로 돌아가기' },
+};
+
+export function BookingCreateScreen({ offerId = null, from = 'list', staticShell = false }: { offerId?: string | null; from?: NewBookingEntry; staticShell?: boolean }) {
   const router = useRouter();
   const repository = getBookingRepository();
   const catalog = getBookingCatalog();
@@ -31,6 +53,14 @@ export function BookingCreateScreen() {
   const revisionRef = React.useRef<number | null>(null);
   const [formState, setFormState] = React.useState({ dirty: false, saving: false });
   const [leaveOpen, setLeaveOpen] = React.useState(false);
+  const back = BACK[from];
+  // 사전 선택은 활성 상품일 때만. 빈 문자열·없는 ID·비활성 상품은 선택하지 않는다.
+  const presetOffer = offerId ? findSelectableOffer(catalog, offerId) : undefined;
+  const invalidOffer = offerId !== null && !presetOffer;
+  const initialValues = React.useMemo<BookingFormValues>(
+    () => (presetOffer ? { ...EMPTY_BOOKING_FORM, offerId: presetOffer.offer.id } : EMPTY_BOOKING_FORM),
+    [presetOffer],
+  );
 
   // 마운트 후에만 저장소를 읽어 최신 revision을 받는다(SSR·import 중에는 LocalStorage를 읽지 않는다).
   // 초기화 실패는 빈 폼으로 성공한 것처럼 전환하지 않고 재시도 화면을 보인다.
@@ -44,6 +74,7 @@ export function BookingCreateScreen() {
   }, []);
 
   React.useEffect(() => {
+    if (staticShell) return;
     let active = true;
     void repository.initialize().then((result) => {
       if (active) applyInit(result);
@@ -51,7 +82,7 @@ export function BookingCreateScreen() {
     return () => {
       active = false;
     };
-  }, [repository, applyInit]);
+  }, [repository, applyInit, staticShell]);
 
   const retry = React.useCallback(() => {
     setRetrying(true);
@@ -64,15 +95,15 @@ export function BookingCreateScreen() {
   const openLeaveDialog = React.useCallback(() => setLeaveOpen(true), []);
   const { allowLeave } = useLeaveGuard({ dirty: formState.dirty, onAttemptLeave: openLeaveDialog });
 
-  const leaveToList = React.useCallback(() => {
+  const leaveToBack = React.useCallback(() => {
     allowLeave();
-    router.push(BOOKINGS_HREF);
-  }, [allowLeave, router]);
+    router.push(back.href);
+  }, [allowLeave, router, back.href]);
 
   function handleBack() {
     if (formState.saving) return; // 저장 중에는 화면 안 이동을 막고 결과를 기다린다
     if (formState.dirty) setLeaveOpen(true);
-    else router.push(BOOKINGS_HREF);
+    else router.push(back.href);
   }
 
   const handleSubmit = React.useCallback(
@@ -94,7 +125,7 @@ export function BookingCreateScreen() {
         if (latest.ok) revisionRef.current = latest.data.revision;
         else return mapSaveError(latest.error);
       }
-      return mapSaveError(result.error);
+      return mapSaveError(result.error, 'create', { imageSelected: input.referenceImageChange?.kind === 'replace' });
     },
     [repository, router, allowLeave],
   );
@@ -102,7 +133,7 @@ export function BookingCreateScreen() {
   return (
     <div className="lc-app">
       <div className="lc-app__top">
-        <PageHeader title="새 레슨 예약" onBack={handleBack} backLabel="예약 목록으로 돌아가기" />
+        <PageHeader title="새 레슨 예약" onBack={handleBack} backLabel={back.label} />
       </div>
 
       {init.status === 'error' ? (
@@ -122,7 +153,12 @@ export function BookingCreateScreen() {
         <BookingForm
           mode="create"
           catalog={catalog}
-          initialValues={EMPTY_BOOKING_FORM}
+          initialValues={initialValues}
+          notice={invalidOffer && !formState.dirty ? (
+            <InlineAlert tone="error" title="선택한 강사 레슨을 찾을 수 없어요">
+              {'다른 강사로 바꾸지 않았어요. 아래에서 강사와 레슨을 직접 선택해주세요.'}
+            </InlineAlert>
+          ) : undefined}
           title="새 레슨 예약"
           description="강사와 일정, 공간을 선택해 레슨을 예약해보세요."
           submitLabel="예약하기"
@@ -141,7 +177,7 @@ export function BookingCreateScreen() {
         confirmLabel="나가기"
         errorTitle="이동하지 못했어요"
         onConfirm={async () => ({ ok: true })}
-        onSuccess={leaveToList}
+        onSuccess={leaveToBack}
       />
     </div>
   );

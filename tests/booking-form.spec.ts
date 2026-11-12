@@ -103,7 +103,10 @@ test('상품 요약은 카탈로그 값과 일치하고 가격은 예시로 표�
 });
 
 test('저장 실패 매핑: 어떤 실패도 성공으로 바꾸지 않음', () => {
-  expect(mapSaveError({ code: 'QUOTA_EXCEEDED', message: '' })).toEqual({ ok: false, alert: { title: '예약을 저장하지 못했어요', message: '브라우저 저장 공간이 부족해요. 입력과 기존 이미지는 유지했어요.' } });
+  // 10단계 보정: 생성은 `기존 이미지`라고 지칭하지 않는다. 선택 이미지가 있을 때만 이미지 유지를 함께 안내한다.
+  expect(mapSaveError({ code: 'QUOTA_EXCEEDED', message: '' })).toEqual({ ok: false, alert: { title: '예약을 저장하지 못했어요', message: '브라우저 저장 공간이 부족해요. 작성한 내용은 유지했어요.' } });
+  expect(mapSaveError({ code: 'QUOTA_EXCEEDED', message: '' }, 'create', { imageSelected: true }).alert?.message).toBe('브라우저 저장 공간이 부족해요. 작성한 내용과 선택한 이미지는 유지했어요.');
+  expect(mapSaveError({ code: 'QUOTA_EXCEEDED', message: '' }, 'edit').alert).toEqual({ title: '변경 내용을 저장하지 못했어요', message: '브라우저 저장 공간이 부족해요. 기존 예약과 편집 중인 내용은 유지했어요.' });
   expect(mapSaveError({ code: 'WRITE_FAILED', message: '' })).toEqual({ ok: false, alert: { title: '예약을 저장하지 못했어요', message: '입력 내용은 유지했어요. 다시 시도해주세요.' } });
   expect(mapSaveError({ code: 'STORAGE_UNAVAILABLE', message: '' }).alert?.title).toBe('예약을 저장하지 못했어요');
   expect(mapSaveError({ code: 'LOCAL_TIME_CONFLICT', message: '같은 시간에 저장된 레슨이 있어요. 다른 시간을 선택해주세요.' })).toEqual({

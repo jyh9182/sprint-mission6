@@ -41,3 +41,31 @@ export const BOOKING_EDIT_PATH = '/bookings/edit';
 export function bookingEditHref(id: BookingId, context?: ListQuery): string {
   return withContext(BOOKING_EDIT_PATH, id, context);
 }
+
+// ---------------------------------------------------------------------------
+// 10단계: 앱 홈과 강사 진입 생성(design/handoff.md §3)
+// ---------------------------------------------------------------------------
+
+/** 앱 홈. `/`는 서비스 소개 랜딩으로 유지하고, 예약 현황을 보여주는 앱 홈은 별도 경로에 둔다. */
+export const HOME_HREF = '/home';
+
+/** 생성 화면이 사전 선택으로 받는 상품 ID 쿼리 이름. 날짜·시각·공간·확인 체크는 전달하지 않는다. */
+export const OFFER_ID_PARAM = 'offerId';
+/** 생성 화면의 진입 문맥. 허용값만 읽고 임의 복귀 URL은 받지 않는다. */
+export const ENTRY_PARAM = 'from';
+export type NewBookingEntry = 'list' | 'home';
+
+/** `/bookings/new?offerId=...&from=home`. 문맥이 목록이면 `from`을 붙이지 않는다. */
+export function newBookingHref({ offerId, from = 'list' }: { offerId?: string; from?: NewBookingEntry } = {}): string {
+  const params = new URLSearchParams();
+  if (offerId) params.set(OFFER_ID_PARAM, offerId);
+  if (from !== 'list') params.set(ENTRY_PARAM, from);
+  const search = params.toString();
+  return search ? `${NEW_BOOKING_HREF}?${search}` : NEW_BOOKING_HREF;
+}
+
+/** URL에서 생성 진입 정보를 읽는다. `offerId`는 존재 여부만 전달하고 유효성은 카탈로그로 화면에서 판정한다. */
+export function parseNewBookingEntry(params: Pick<URLSearchParams, 'get' | 'has'>): { offerId: string | null; from: NewBookingEntry } {
+  const offerId = params.has(OFFER_ID_PARAM) ? (params.get(OFFER_ID_PARAM) ?? '').trim() : null;
+  return { offerId, from: params.get(ENTRY_PARAM) === 'home' ? 'home' : 'list' };
+}

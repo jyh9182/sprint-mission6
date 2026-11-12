@@ -206,7 +206,15 @@ export type BookingFormSubmitResult =
   | { ok: true }
   | { ok: false; alert?: FormSubmitAlert; fieldErrors?: BookingFormErrors; revalidate?: boolean };
 
-export const QUOTA_MESSAGE = '브라우저 저장 공간이 부족해요. 입력과 기존 이미지는 유지했어요.';
+/**
+ * 저장 공간 초과 문구(10단계 보정, design/handoff.md §5). 생성에는 저장된 `기존 이미지`가 없으므로
+ * 작성한 내용과(선택했다면) 선택한 이미지를 유지했다고 안내한다. 수정은 저장된 예약과 편집값 보존을 안내한다.
+ */
+export const QUOTA_MESSAGES = {
+  create: '브라우저 저장 공간이 부족해요. 작성한 내용은 유지했어요.',
+  createWithImage: '브라우저 저장 공간이 부족해요. 작성한 내용과 선택한 이미지는 유지했어요.',
+  edit: '브라우저 저장 공간이 부족해요. 기존 예약과 편집 중인 내용은 유지했어요.',
+} as const;
 
 /** 생성/수정 화면의 실패 문구 차이(5단계 Save Error · 6단계 Edit Save Error). */
 const SAVE_COPY = {
@@ -223,6 +231,7 @@ const SAVE_COPY = {
 export function mapSaveError(
   error: StoreError,
   mode: 'create' | 'edit' = 'create',
+  { imageSelected = false }: { imageSelected?: boolean } = {},
 ): Exclude<BookingFormSubmitResult, { ok: true }> {
   const { title: SAVE_FAILED_TITLE, keep: KEEP_INPUT } = SAVE_COPY[mode];
   switch (error.code) {
@@ -249,7 +258,10 @@ export function mapSaveError(
       };
     case 'QUOTA_EXCEEDED':
       // 9단계: 입력·준비한 이미지·제거 예정과 저장된 기존 이미지를 모두 보존한다(자동으로 첨부를 지우지 않음).
-      return { ok: false, alert: { title: SAVE_FAILED_TITLE, message: QUOTA_MESSAGE } };
+      return {
+        ok: false,
+        alert: { title: SAVE_FAILED_TITLE, message: mode === 'edit' ? QUOTA_MESSAGES.edit : imageSelected ? QUOTA_MESSAGES.createWithImage : QUOTA_MESSAGES.create },
+      };
     case 'CORRUPT_DATA':
     case 'UNSUPPORTED_VERSION':
       return { ok: false, alert: { title: SAVE_FAILED_TITLE, message: `${error.message}\n${KEEP_INPUT}` } };

@@ -1,6 +1,6 @@
 # 레슨커넥트AI 예약 CRUD — 진행 기록
 
-최종 갱신: 2026-11-12 (Asia/Seoul)
+최종 갱신: 2026-11-13 (Asia/Seoul)
 
 ## 현재 상태
 
@@ -22,8 +22,10 @@
 - 8단계 Claude: **목록 탐색 구현·검증 완료 (2026-11-12)**. `/bookings`에 검색·상태 칩·정렬·5개 단위 페이지, 조건은 URL 쿼리(`q→status→sort→page`)만 단일 출처, 잘못된 쿼리 정규 URL replace, 범위 밖 페이지 보정, 상세·수정·취소·삭제에서 목록 조건 유지. 아래 "Claude 8단계 구현 기록" 참조.
 - 9단계 Codex: **선택·미리보기·교체·제거 예정·파일 오류·용량 초과·상세 이미지 Figma 상태와 v2 데이터/마이그레이션 계약 완료**.
 - 9단계 Claude: **참고 이미지 첨부·v2 마이그레이션 구현·검증 완료 (2026-11-12)**. 공통 폼 메모 아래 `참고 이미지 (선택)`(선택·변환 미리보기·교체·제거 예정·되돌리기), 상세 메모 다음 이미지 카드, 활성 키 `lessonconnect:bookings:v2`(v1은 읽기 전용 원본), 원본 2 MiB·긴 변 1280px·WebP 500 KiB. 아래 "Claude 9단계 구현 기록" 참조.
-- Figma: 기존 홈·음악 취향·예약 제품 화면과 1~8단계 화면 유지. 9단계 이미지 영역과 오류 상태만 추가.
-- 배포: 수행하지 않음.
+- 10단계 Codex: **최종 화면·라우트·동작 인계와 통합 QA 문서 작성, Figma 필수 프로토타입 연결·시각 검수 완료 (2026-11-13)**. 실제 앱 1~9단계 구현과 대조하여 앱 홈/매칭/강사 진입의 미구현 범위를 분리했다. 아래 "10단계 인계 및 남은 이슈" 참조.
+- 10단계 Claude: **통합 보정·자동 QA 완료 (2026-11-13)**. 앱 홈 `/home`(다가오는 레슨 = 실제 v2 데이터, 강사 예시 1명), `/bookings/new?offerId=&from=home` 사전 선택·진입 문맥별 뒤로가기, 잘못된 `offerId` 오류 안내, 생성/수정 용량 초과 문구 보정, BottomNav `홈`→`/home`, README 작성. 개발 서버 156/156·정적 `out/` 149 통과+7 skip. 실기기·배포 URL 확인은 미실행. 아래 "Claude 10단계 구현 기록" 참조.
+- Figma: 기존 홈·음악 취향·예약 제품 화면과 1~9단계 화면을 유지하며 10단계 연결용 생성 상태 3개와 프로토타입 전환 53개를 추가. 9단계 이미지 제거 되돌리기 버튼만 실제 구현에 맞춰 보정.
+- 배포: 수행하지 않음(GitHub push·Vercel·Figma Make 배포 모두 미실행, 승인 대기).
 
 ## 작업 경로와 인계 주의
 
@@ -31,7 +33,7 @@
 
 현재 디자인 작업 폴더에는 AGENTS.md, CLAUDE.md, design/README.md, design/brief.md와 앱 소스가 없다. 실제 앱 프로젝트는 `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`로 확인했으며 4단계에서 `AGENTS.md`, `CLAUDE.md`, `next.config.ts`, `lib/bookings/routes.ts`를 읽었다. IDE 탭 자체의 내용은 읽지 못했다. 디자인 폴더와 앱 프로젝트의 파일은 자동 동기화되지 않는다.
 
-Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/09-booking-image.md`까지, 이 진행 기록을 실제 앱 프로젝트에 전달하고 그 프로젝트의 작업 규칙·브리프와 대조해야 한다. 기존 같은 이름의 문서가 있다면 덮어쓰지 말고 내용을 비교·병합한다. 현재 폴더에서 새 Next.js 앱을 만들지 않는다.
+Claude 10단계 전 [최종 인계](handoff.md)와 [통합 QA](qa-checklist.md), 필요한 1~9단계 계약과 이 진행 기록을 실제 앱 프로젝트에 전달하고 그 프로젝트의 작업 규칙·브리프와 대조해야 한다. 기존 같은 이름의 문서가 있다면 덮어쓰지 말고 내용을 비교·병합한다. 현재 폴더에서 새 Next.js 앱을 만들지 않는다.
 
 ## 산출물
 
@@ -45,6 +47,8 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/09-b
 - [7단계 취소·삭제 인계](steps/07-cancel-delete.md): 상태별 액션, 확인/처리/실패 Dialog, 취소 후 상세·삭제 후 목록, 8개 Figma 프레임, Claude 완료 조건.
 - [8단계 예약 목록 탐색 인계](steps/08-list-discovery.md): 검색·상태·정렬·페이지, URL 쿼리·상세 복귀, 3개 Figma 프레임, Claude 완료 조건.
 - [9단계 참고 이미지 인계](steps/09-booking-image.md): 파일 선택·미리보기·교체·제거, 오류·저장 실패·상세, v2 마이그레이션, Figma 영역과 Claude 완료 조건.
+- [10단계 최종 인계](handoff.md): Figma 프로토타입·실제 라우트·컴포넌트·홈/강사/취향 연결 규칙·구현 차이·LocalStorage 대체 범위.
+- [10단계 통합 QA](qa-checklist.md): CRUD·오류·탐색·이미지·새로고침·실환경 및 미구현 경계 검증.
 - 이 진행 기록: Codex/Claude 단계별 상태와 재개 지점.
 
 ## 최신 Figma 근거
@@ -64,12 +68,13 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/09-b
 - 7단계 취소 확인 `299:2478`·처리 `299:2520`·오류 `299:2564`·완료 상세 `299:2748`; 삭제 확인 `299:2613`·처리 `299:2655`·오류 `299:2699`·완료 목록 `299:2792`.
 - 8단계 기본 `302:2781`·조건 적용 `302:2896`·결과 없음 `302:3007`; 상태 칩 Default `302:2777`·Selected `302:2779`.
 - 9단계 이미지 필드 상태 보드 `306:2964`, 컴포넌트 Empty `306:2936`·Selected `306:2944`·Error `306:2956`·Remove Pending `309:3225`; 생성 선택 `307:2961`·수정 기존 `307:3044`·파일 오류 `307:3129`·용량 초과 `307:3208`·상세 `307:3300`·상세 스크롤 `307:3388`.
+- 10단계 연결용 생성 이미지 없음 `311:3234`, 강사 진입 생성 `312:3487`, 강사 진입 생성 이미지 선택 `312:3525`. 홈 `23:67`을 `Flow 1` 시작점으로 사용하고 22개 관련 화면에 53개 연결을 확인했다. Remove Pending `309:3225`의 되돌리기를 44px 버튼 `313:3363`으로 보정했다.
 
 ## 확정 설계 결정
 
 1. `LessonBooking`은 로컬 데모 예약이며 실제 결제·강사/공간 확정 기능이 아님.
 2. 5단계 최신 요청에 따라 `/bookings/new`는 단일 스크롤 폼이다. 기존 3단계 일정/공간/확인 화면은 유지하되 생성 경로로 연결하지 않는다. 데이터 계약은 그대로 재사용한다.
-3. 키 `lessonconnect:bookings:v1`, envelope schemaVersion=1. 최초 null 키만 시드, 빈 배열은 재시드 금지.
+3. 1단계 최초 계약은 키 `lessonconnect:bookings:v1`, envelope schemaVersion=1이었다. **9단계 이후 활성 키는 `lessonconnect:bookings:v2`**다. v1은 읽기 전용 마이그레이션 원본이며 최초 null 키만 시드, 빈 배열은 재시드 금지.
 4. 상태는 scheduled/cancelled. 진행 중/종료는 시간에서 파생. 취소는 기록 유지, 삭제는 제거.
 5. 첫 상품은 김민준·기타·Rock/Blues·60분·동탄 스튜디오 A/B/C·예시 50,000원.
 6. 사용자 입력과 기준 카탈로그를 구분하고 예약에 표시 snapshot 저장.
@@ -80,6 +85,7 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/09-b
 11. 7단계 취소는 시작 전 scheduled의 상태 변경·기록 유지, 삭제는 cancelled 또는 종료된 scheduled의 해당 레코드 제거다. 둘 다 확인 Dialog 뒤에만 실행하며 결제·환불 처리는 없다.
 12. 8단계 목록 탐색은 LocalStorage 조회 결과의 파생 UI다. `q/status/sort/page`를 URL에서 관리하고, 조건 변경은 1페이지로 초기화한다. 상세·수정·취소·삭제 이후 유효한 목록 조건으로 복귀한다.
 13. 9단계 참고 이미지는 예약당 선택적 1장이다. v2 키 `lessonconnect:bookings:v2`로 v1을 검증 후 원자적으로 마이그레이션한다. 원본 2 MiB·긴 변 1280px·변환 500 KiB 제한, JPEG/PNG/WebP만 허용한다. 저장 취소·실패는 기존 첨부를 유지한다.
+14. 10단계 실제 앱 `/`는 소개 랜딩이고 Figma 앱 홈·매칭·추천·강사 상세는 데모다. 실제 CRUD만 구현 완료로 표시한다. 홈 예약 현황과 강사 상품 사전 선택은 [최종 인계](handoff.md)의 미구현 연결 계약을 따른다.
 
 ## 10단계 상태
 
@@ -94,7 +100,7 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/09-b
 | 7 | 취소·삭제 | Figma·문서 완료 | 구현·검증 완료 |
 | 8 | 검색·필터·정렬·페이지 | Figma·문서 완료 | 구현·검증 완료 |
 | 9 | 이미지 첨부·계약 확장 | Figma·문서 완료 | 구현·검증 완료 |
-| 10 | 통합·검수·최종 인계 | 미착수 | 미착수 |
+| 10 | 통합·검수·최종 인계 | Figma 연결·문서 완료 | 통합 보정·자동 QA 완료 (실기기·배포 확인 남음) |
 
 ## 검증 기록
 
@@ -119,10 +125,21 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/09-b
 - 7단계 취소·삭제 런타임 검사: Claude가 실행, 전체 106/106 통과 (7단계 기록).
 - 8단계 목록 탐색 런타임 검사: Claude가 실행, 전체 121/121 통과 (8단계 기록).
 - 9단계 참고 이미지·v2 런타임 검사: Claude가 실행, 전체 142/142 통과 (9단계 기록).
+- 10단계 Figma 화면 22개·프로토타입 연결 53개 구조 확인, 연결용 생성 3개와 되돌리기 버튼 시각 검수 완료. 앱 코드 수정·타입 검사·빌드·Playwright 재실행은 **이번 Codex 작업에서 하지 않았다**.
+- 10단계 통합 런타임 검사: Claude가 실행. `npm run typecheck`·`npm run build` 통과, 개발 서버 Playwright 156/156 통과, 정적 `out/` 로컬 서빙 149 통과·7 skip(개발 전용 `/ui-check`). lint는 스크립트·설정이 없어 미실행 (10단계 기록).
 
 ## 다음 작업 / 재개 지점
 
-Claude 1~9단계 완료. 실제 앱 프로젝트 경로는 `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`이다. **다음은 10단계(통합·검수·최종 인계)**다. 9단계 이미지 계약 구현은 `lib/bookings/reference-image.ts`(순수 규칙·검증기), `lib/bookings/image-prepare.ts`(브라우저 변환), `components/bookings/reference-image-field.tsx`(폼 필드)에 있고, 저장 키는 `lessonconnect:bookings:v2`다(아래 "Claude 9단계 구현 기록"). 9단계 "명세·Figma와 다르게 구현한 부분"의 Codex 확인이 필요하다.
+**10단계 Claude 통합 보정·자동 QA 완료(2026-11-13).** 남은 일은 아래 "Claude 10단계 구현 기록 › 남은 이슈"의 실기기·배포 URL 확인과, Codex의 `/home` 축소 구현 차이 확인이다. 아래는 10단계 착수 전 재개 지점(기록 보존). Claude 1~9단계 완료. 실제 앱 프로젝트 경로는 `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`이다. **다음은 Claude의 10단계 앱 통합 보정·QA**다. [최종 인계](handoff.md)의 실제/데모 경계와 [통합 QA](qa-checklist.md)를 우선 읽는다. Figma 앱 홈·매칭·강사 상세는 현재 앱에 없으므로 필요한 추가 구현을 별도 범위로 결정하기 전에는 완료로 표시하지 않는다. 기존 CRUD의 용량 초과 생성 문구를 보정하고 정적 배포·모바일 실환경·이미지 EXIF/브라우저 호환을 검증한다. 9단계 이미지 계약 구현은 `lib/bookings/reference-image.ts`(순수 규칙·검증기), `lib/bookings/image-prepare.ts`(브라우저 변환), `components/bookings/reference-image-field.tsx`(폼 필드)에 있고, 저장 키는 `lessonconnect:bookings:v2`다(아래 "Claude 9단계 구현 기록").
+
+## 10단계 인계 및 남은 이슈
+
+- **완료:** Figma `Flow 1`에서 홈→취향 1~5/5→추천→김민준 상세→강사 진입 생성, 홈 예약 현황/탭→목록, 목록→생성/상세→수정·취소·삭제를 연결했다. 생성 진입 문맥별 뒤로가기를 나누고 이미지 제거 되돌리기 버튼을 보정했다. Figma 링크와 동작은 [handoff.md](handoff.md)에 있다.
+- **실제 구현 완료:** LocalStorage v2 예약 CRUD·검색/필터/정렬/페이지·참고 이미지. 9단계 Claude 검증 142/142 통과 기록을 유지한다.
+- **미구현 연결:** Figma 앱 홈, 실제 음악 취향 5단계, AI 추천, 강사 상세, 강사에서 `/bookings/new?offerId=` 사전 선택. 현재 `/`는 랜딩이고 체험 Dialog는 저장되지 않는 데모다. Figma 상호작용은 앱 기능으로 간주하지 않는다.
+- **보정 필요:** 생성 저장 용량 초과 메시지의 `기존 이미지` 표현. 이지은·박도현 추천 카드의 활성처럼 보이는 행동은 앱으로 옮길 때 `준비 중` 처리하거나 유효한 카탈로그를 마련해야 한다. 현재 예약 상품은 김민준 1개뿐이다.
+- **확인 대기:** 정적 배포의 상세/수정 직접 URL, 모바일 Safari/Chrome의 WebP·EXIF, 키보드/스크린 리더, 여러 이미지 저장 시 브라우저 총량. [QA 체크리스트](qa-checklist.md)에 실행 항목을 정리했다.
+- **범위 제한:** Supabase DB/Storage/Auth/RLS와 Server Actions는 LocalStorage·Data URL·클라이언트 저장소로 대체했다. origin/브라우저 프로필별 저장이고 기기 간 공유·서버 동기화는 없다. 결제·로그인·서버·AI API는 추가하지 않는다.
 
 **6단계 수정 구현 완료**: `components/bookings/booking-form.tsx`는 `mode: 'edit'`에서 의미 있는 예약 필드 변경만 dirty로 계산하고, 변경 없음 저장을 막는다. `lib/bookings/form.ts`의 검증·문구, `mapSaveError`, `setBookingFlash(id, 'update')`, `useLeaveGuard` + `ConfirmDialog`를 재사용한다. 정적 URL `/bookings/edit?id={UUID}`와 예정 상세 Footer `예약 수정`도 연결됐다. 자세한 검증은 아래 Claude 6단계 기록을 참조한다.
 
@@ -869,4 +886,65 @@ v2 전환 직후 기존 검사 중 31개가 실패했다. 모두 테스트가 v1
 - 매 조회마다 저장된 모든 이미지의 base64 형식을 정규식으로 검사한다. 7건 정도에서는 체감 지연이 없었지만 측정하지 않았다.
 - 실제 모바일 기기·스크린 리더, production `out/` 정적 서버 브라우저 검사는 하지 않았다. 배포하지 않았다.
 
-Claude 9단계 완료 여부: **완료**. 10단계는 시작하지 않았다.
+Claude 9단계 완료 여부: **완료**.
+
+## Claude 10단계 구현 기록 (2026-11-13)
+
+실제 앱 프로젝트 절대 경로: `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6` (브랜치 `feat/booking-storage`)
+
+읽은 자료: `CLAUDE.md`, `AGENTS.md`, `design/handoff.md`, `design/qa-checklist.md`, 이 진행 기록, Figma `01_Home_Reference`(23:67)·김민준 강사 상세(63:305) 스크린샷(Figma MCP로 읽기만 함, 수정 없음). 이번에는 Codex가 Claude 1~9단계 기록을 지우지 않았다.
+
+### 변경 파일
+
+- 신규: `app/home/page.tsx`, `components/app/app-home-screen.tsx`, `lib/bookings/home.ts`, `public/assets/ui/nav-home-active.svg`, `public/assets/ui/nav-booking.svg`, `tests/app-integration.spec.ts`, `README.md`
+- 수정: `lib/bookings/routes.ts`(`HOME_HREF`, `newBookingHref`, `parseNewBookingEntry`), `components/bookings/booking-create-screen.tsx`(쿼리 진입·사전 선택·뒤로가기 목적지), `app/bookings/new/page.tsx`(Suspense), `components/app/bottom-nav.tsx`(홈 `/home`·탭별 선택 아이콘), `lib/bookings/form.ts`(`QUOTA_MESSAGES`), `app/globals.css`(홈 스타일, 토큰 `--lc-mint`·`--lc-mint-ink`·`--lc-home-photo-*` 추가)
+- 테스트 문구 갱신: `tests/booking-create.spec.ts`, `tests/booking-edit.spec.ts`, `tests/booking-image.spec.ts`, `tests/booking-form.spec.ts`(용량 초과 문구), `tests/booking-list.spec.ts`(홈 탭 href)
+- `design/` 안에서는 이 파일만 수정했다(handoff·qa-checklist는 읽기만 함).
+
+### 구현 내용
+
+- **홈 예약 현황**(`/home`): `useBookings()`의 검증된 v2 데이터에서 `selectUpcomingBooking`으로 `scheduled`이면서 시작이 현재보다 늦은 예약 중 가장 이른 1건을 고른다(시작 시각이 같으면 먼저 만든 예약). 서울 날짜·시각·snapshot의 강사·악기·공간을 표시하고, 다른 예정 레슨 수(`예정 레슨 N건 더`)도 보여준다. 초기화 중에는 로딩, 읽기 실패에는 오류 Alert와 `다시 시도`(쓰기 없이 다시 읽기), 0건에는 `예정된 레슨이 없어요`와 `/bookings` 링크를 보여준다. 카드·`예약 전체보기`·예약 탭은 모두 `/bookings`로 간다. 다른 탭에서 바뀌면 `storage` 이벤트로 다시 읽고, 1분마다 현재 시각을 갱신한다. Figma 고정 날짜는 쓰지 않는다.
+- **강사에서 생성 진입**: 홈의 `강사 예시` 카드(김민준, 활성 카탈로그 상품이 있을 때만 활성)의 `이 강사와 레슨하기` → `/bookings/new?offerId=offer-kim-guitar-60&from=home`. 생성 화면은 활성 상품이면 **상품만** 사전 선택하고 날짜·시각·공간·확인 체크는 비워 둔다. 사전 선택만으로는 미저장 변경으로 보지 않는다. 없는 ID·빈 값·비활성 ID면 다른 상품으로 대체하지 않고 빈 선택과 오류 Alert `선택한 강사 레슨을 찾을 수 없어요`를 보여준다(사용자가 값을 바꾸면 사라짐). `from=home`이면 뒤로가기·이탈 확인 후 이동 목적지가 `/home`(`홈으로 돌아가기`), 그 밖의 값은 목록이다. 임의 복귀 URL은 받지 않는다.
+- **용량 초과 문구 보정**(handoff §5): 생성 `브라우저 저장 공간이 부족해요. 작성한 내용은 유지했어요.` / 선택 이미지가 있으면 `… 작성한 내용과 선택한 이미지는 유지했어요.` / 수정 `… 기존 예약과 편집 중인 내용은 유지했어요.`
+- **하단 내비**: `홈`은 `/home`(handoff §3 "앱 홈은 별도 `/home`"), 선택된 탭만 진한 아이콘. `찾기`·`마이`는 그대로 준비 중(링크 아님).
+
+### 명세·Figma와 다르게 구현한 부분 (Codex 확인 필요)
+
+1. **`/home`은 Figma 홈의 축소판이다.** Figma의 히어로·`AI 맞춤 강사 찾기`·4개 기능 아이콘·`찜한 강사`·알림 아이콘, 추천 강사 3명의 `AI 매칭 94/92/89%`·별점·후기 수·태그는 넣지 않았다. 실제 근거 데이터가 없고 CLAUDE.md가 허위 후기·운영 실적을 금지하기 때문이다. 대신 `다가오는 레슨`과 `강사 예시` 1명(배지 `예시 강사`, 안내 `AI 매칭 결과·후기·검증 내역이 아니에요`)만 있다.
+2. **강사 상세 화면은 만들지 않았다.** Figma 상세(63:305)의 검증 배지·후기·매칭 이유가 같은 이유로 근거가 없다. 그래서 강사 진입 생성의 뒤로가기는 Figma(강사 상세)와 달리 `/home`으로 간다.
+3. 이지은·박도현 카드는 예약 상품이 없어 홈에 넣지 않았다(handoff §3: 김민준 상품으로 연결 금지).
+4. 랜딩 `/`에는 `/home` 링크를 추가하지 않았다(승인된 랜딩 시안 유지). 홈 하단 안내의 `서비스 소개 보기`가 `/`로 간다.
+5. 앱 토큰에 민트가 없어 `--lc-mint`(#ddf8ef)·`--lc-mint-ink`(#08795e)를 랜딩 `--mint`·`--green`과 같은 값으로 추가했다.
+
+### 실행한 검증 명령과 결과
+
+- `npm run typecheck`: 통과
+- `npm run build`: 통과. 정적 생성 `/`, `/_not-found`, `/bookings`, `/bookings/detail`, `/bookings/edit`, `/bookings/new`, `/home`. 빌드가 자동으로 바꾼 `next-env.d.ts`는 되돌렸다.
+- `npm run dev -- --port 3100` + `PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright npm test`: **156/156 통과**(1.4분). 기존 142건 + 신규 `tests/app-integration.spec.ts` 14건.
+- 정적 `out/`을 scratchpad의 로컬 Node 서버로 서빙(`/path` → `path.html`, 포트 3200) + `LANDING_TEST_URL=http://localhost:3200 npm test`: **149 통과, 7 skip**. skip은 개발 서버 전용 `/ui-check` 테스트다(빌드 결과에 경로 없음, 의도대로). 정적 파일에서도 상세·수정 `?id=` 직접 진입·새로고침이 동작한다.
+- lint: **미실행**. `package.json`에 lint 스크립트가 없고 ESLint 의존성·설정도 없다.
+- 디자인 확인(시각): 390×844로 `/home`(예약 있음·0건), 강사 진입 생성, 잘못된 `offerId` 생성 화면을 촬영해 직접 확인했다. 겹침·가로 넘침은 없었다. 픽셀 비교 도구는 쓰지 않았다.
+
+신규 14건(`tests/app-integration.spec.ts`)이 확인하는 실제 동작: 키 없음 → 시드 1건이 홈에 표시되고 카드는 `/bookings`로 이동, 고정 날짜 미표시 / 예정 중 가장 이른 1건만 표시하고 취소·진행 중·종료 제외 / 0건은 빈 상태이고 새로고침해도 재시드하지 않음 / 손상 저장소는 오류·다시 시도, 원본 그대로 / 다른 탭에서 취소하면 홈 갱신 / 강사 예시 → 상품만 사전 선택, 나머지 필드 비어 있음, 매칭률·별점 미표시, 변경 없이 뒤로가면 `/home` / 입력 후 뒤로가면 이탈 확인 → `계속 작성`이면 값 유지 → 저장하면 상세로 이동하고 홈 현황이 새 예약으로 바뀜 / 잘못된 `offerId` 3종(없는 ID·빈 값·`<script>`) → 대체하지 않고 오류 안내, 뒤로가기는 목록 / 목록 진입 생성은 선택 없음 / 생성 + 선택 이미지 + 용량 초과 → 새 문구, `기존 이미지` 미포함, 미리보기·상품 유지, 저장소 무변경 / 390·320 가로 넘침 없음, 홈 탭 `aria-current`, 링크 2개(찾기·마이 비링크), 사진 로드·대체 텍스트, Tab으로 CTA에 포커스 후 Enter로 이동 / `/home`·상세·수정 직접 진입과 새로고침, 없는 ID. 모든 검사에서 콘솔 오류 0건.
+
+### QA 체크리스트 대응 (design/qa-checklist.md)
+
+- A: `/`는 랜딩 유지. BottomNav `예약`→`/bookings`, `홈`→`/home`(체크리스트 작성 시점의 `/`에서 handoff 규칙대로 변경), `찾기`·`마이`는 비링크. 목록→생성/상세→수정·새로고침·직접 URL 통과. 홈 예약 현황·강사 `offerId` 진입은 **이번에 구현·자동 검증**했다. Figma 프로토타입 `Flow 1` 클릭 검증은 Codex 범위라 실행하지 않았다.
+- B·C·D·E: 기존 142건 회귀 + 신규 14건으로 자동 검증, 전부 통과. 용량 초과 문구 보정 완료.
+- F: 390×844·320 레이아웃, 라벨·`aria-invalid`·Dialog 포커스·Escape·Enter는 자동 검증. **실기기(모바일 Safari/Chrome)·스크린 리더 낭독·EXIF 방향·배포 URL은 미실행.**
+
+### 배포 준비 상태
+
+- 정적 export(`out/`)라 서버·환경 변수 없이 호스팅할 수 있다. 로컬 정적 서빙에서 전체 흐름 통과.
+- Figma Make: `.figma/make/deploy`(production)·`deploy-preview`가 있다. **실행하지 않았다(승인 필요).**
+- Vercel: `vercel.json`·`.vercel` 연결 없음. 필요 시 Framework Next.js, `npm ci`, `npm run build`, Node 24, 환경 변수 없음. 배포 후 배포 URL에서 직접 URL 새로고침·이미지 CRUD를 다시 확인해야 한다. **실행하지 않았다.**
+- GitHub: 원격 `origin`이 `jyh9182/sprint-mission5.git`이라 폴더 이름(mission6)과 다르다. push 전에 대상 저장소 확인이 필요하다. **push·커밋 모두 하지 않았다.**
+
+### 남은 이슈
+
+- 실기기 모바일 Safari/Chrome(회전·모바일 키보드·WebP 인코딩·EXIF), 스크린 리더, Firefox/WebKit 미검사.
+- Figma 앱 홈 전체·음악 취향 1~5/5·AI 추천·강사 상세는 미구현. 구현하려면 근거 있는 데이터(또는 `예시`·`준비 중` 표기 기준)를 Codex와 먼저 정해야 한다.
+- LocalStorage 총량 한계(이미지 있는 예약 대략 7건 안팎)와 origin별 분리(preview·production 데이터가 따로 저장됨).
+- `design/qa-checklist.md` A항의 "`홈`은 현재 `/`로 이동" 문구는 이번 변경과 맞지 않는다. Codex 쪽에서 갱신이 필요하다.
+
+Claude 10단계 완료 여부: **앱 통합 보정·자동 QA 완료.** 실기기·배포 URL 확인은 남아 있으며 통과로 기록하지 않는다.
