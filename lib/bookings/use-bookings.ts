@@ -44,11 +44,20 @@ export function useBookings(repository: BookingRepository = getBookingRepository
     };
   }, [repository]);
 
-  /** 오류 화면의 다시 시도. 저장값을 덮어쓰지 않고 다시 읽기만 한다. */
+  const [retrying, setRetrying] = useState(false);
+
+  /**
+   * 오류 화면의 다시 시도. 저장값을 덮어쓰거나 초기화를 리셋하지 않고 다시 읽기만 한다
+   * (이미 준비된 저장소는 쓰기 없는 조회, 손상·버전 오류는 쓰기 없이 같은 오류 반환).
+   * 결과가 나올 때까지 현재 오류 화면을 유지한다.
+   */
   const retry = useCallback(() => {
-    setState({ status: 'initializing' });
-    void repository.initialize().then((result) => setState(toState(result)));
+    setRetrying(true);
+    void repository.initialize().then((result) => {
+      setState(toState(result));
+      setRetrying(false);
+    });
   }, [repository]);
 
-  return { state, retry, repository };
+  return { state, retry, retrying, repository };
 }
