@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { BookingInfoCard, BookingMemoCard } from '@/components/bookings/booking-detail-cards';
+import { BookingInfoCard, BookingMemoCard, BookingReferenceImageCard } from '@/components/bookings/booking-detail-cards';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog, type ConfirmResult } from '@/components/ui/confirm-dialog';
 import { InlineAlert } from '@/components/ui/inline-alert';
@@ -310,6 +310,7 @@ function BookingDetailContent({ booking, phase, onAction, actionButtonRef }: {
       </div>
       <BookingInfoCard booking={booking} />
       <BookingMemoCard memo={booking.memo} />
+      {booking.referenceImage ? <BookingReferenceImageCard image={booking.referenceImage} /> : null}
       {/* 허용되지 않은 액션은 비활성으로 남기지 않고 영역에서 제거한다. 진행 중에는 영역 자체가 없다. */}
       {onAction && (actions.cancel || actions.delete) ? (
         <section className="lc-detail-manage" aria-labelledby="booking-manage-title">

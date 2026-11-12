@@ -20,7 +20,9 @@
 - 7단계 Claude: **예약 취소·기록 삭제 구현·검증 완료 (2026-11-12)**. 상세 `예약 관리`의 준비 중 안내를 `예약 취소`/`예약 기록 삭제` + 공통 `ConfirmDialog`로 교체. 취소는 status 변경·기록 유지, 삭제는 해당 ID 제거 후 목록 이동·성공 알림 1회, 0건 재시드 없음. 아래 "Claude 7단계 구현 기록" 참조.
 - 8단계 Codex: **예약 목록 탐색의 기본·조건 적용·결과 없음 3개 Figma 프레임과 상태 칩 2종 제작, 시각 검수·URL/복귀 명세 완료**.
 - 8단계 Claude: **목록 탐색 구현·검증 완료 (2026-11-12)**. `/bookings`에 검색·상태 칩·정렬·5개 단위 페이지, 조건은 URL 쿼리(`q→status→sort→page`)만 단일 출처, 잘못된 쿼리 정규 URL replace, 범위 밖 페이지 보정, 상세·수정·취소·삭제에서 목록 조건 유지. 아래 "Claude 8단계 구현 기록" 참조.
-- Figma: 기존 홈·음악 취향·예약 제품 화면과 1~7단계 화면 유지. 8단계 탐색 상태만 추가.
+- 9단계 Codex: **선택·미리보기·교체·제거 예정·파일 오류·용량 초과·상세 이미지 Figma 상태와 v2 데이터/마이그레이션 계약 완료**.
+- 9단계 Claude: **참고 이미지 첨부·v2 마이그레이션 구현·검증 완료 (2026-11-12)**. 공통 폼 메모 아래 `참고 이미지 (선택)`(선택·변환 미리보기·교체·제거 예정·되돌리기), 상세 메모 다음 이미지 카드, 활성 키 `lessonconnect:bookings:v2`(v1은 읽기 전용 원본), 원본 2 MiB·긴 변 1280px·WebP 500 KiB. 아래 "Claude 9단계 구현 기록" 참조.
+- Figma: 기존 홈·음악 취향·예약 제품 화면과 1~8단계 화면 유지. 9단계 이미지 영역과 오류 상태만 추가.
 - 배포: 수행하지 않음.
 
 ## 작업 경로와 인계 주의
@@ -29,7 +31,7 @@
 
 현재 디자인 작업 폴더에는 AGENTS.md, CLAUDE.md, design/README.md, design/brief.md와 앱 소스가 없다. 실제 앱 프로젝트는 `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`로 확인했으며 4단계에서 `AGENTS.md`, `CLAUDE.md`, `next.config.ts`, `lib/bookings/routes.ts`를 읽었다. IDE 탭 자체의 내용은 읽지 못했다. 디자인 폴더와 앱 프로젝트의 파일은 자동 동기화되지 않는다.
 
-Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/08-list-discovery.md`까지, 이 진행 기록을 실제 앱 프로젝트에 전달하고 그 프로젝트의 작업 규칙·브리프와 대조해야 한다. 기존 같은 이름의 문서가 있다면 덮어쓰지 말고 내용을 비교·병합한다. 현재 폴더에서 새 Next.js 앱을 만들지 않는다.
+Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/09-booking-image.md`까지, 이 진행 기록을 실제 앱 프로젝트에 전달하고 그 프로젝트의 작업 규칙·브리프와 대조해야 한다. 기존 같은 이름의 문서가 있다면 덮어쓰지 말고 내용을 비교·병합한다. 현재 폴더에서 새 Next.js 앱을 만들지 않는다.
 
 ## 산출물
 
@@ -42,6 +44,7 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/08-l
 - [6단계 예약 수정 인계](steps/06-booking-edit.md): 기존값·변경 여부·상태 제한·미저장 이탈·오류·수정 완료 상세, 7개 Figma 프레임, Claude 완료 조건.
 - [7단계 취소·삭제 인계](steps/07-cancel-delete.md): 상태별 액션, 확인/처리/실패 Dialog, 취소 후 상세·삭제 후 목록, 8개 Figma 프레임, Claude 완료 조건.
 - [8단계 예약 목록 탐색 인계](steps/08-list-discovery.md): 검색·상태·정렬·페이지, URL 쿼리·상세 복귀, 3개 Figma 프레임, Claude 완료 조건.
+- [9단계 참고 이미지 인계](steps/09-booking-image.md): 파일 선택·미리보기·교체·제거, 오류·저장 실패·상세, v2 마이그레이션, Figma 영역과 Claude 완료 조건.
 - 이 진행 기록: Codex/Claude 단계별 상태와 재개 지점.
 
 ## 최신 Figma 근거
@@ -60,6 +63,7 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/08-l
 - 6단계 기존값/변경 없음 `295:2272`, 편집 `295:2355`, 저장 실패 `295:2433`, 이탈 확인 `295:2518`, 없는 ID `295:2605`, 수정 불가 `295:2637`, 성공 상세 `295:2670`.
 - 7단계 취소 확인 `299:2478`·처리 `299:2520`·오류 `299:2564`·완료 상세 `299:2748`; 삭제 확인 `299:2613`·처리 `299:2655`·오류 `299:2699`·완료 목록 `299:2792`.
 - 8단계 기본 `302:2781`·조건 적용 `302:2896`·결과 없음 `302:3007`; 상태 칩 Default `302:2777`·Selected `302:2779`.
+- 9단계 이미지 필드 상태 보드 `306:2964`, 컴포넌트 Empty `306:2936`·Selected `306:2944`·Error `306:2956`·Remove Pending `309:3225`; 생성 선택 `307:2961`·수정 기존 `307:3044`·파일 오류 `307:3129`·용량 초과 `307:3208`·상세 `307:3300`·상세 스크롤 `307:3388`.
 
 ## 확정 설계 결정
 
@@ -75,6 +79,7 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/08-l
 10. 6단계 수정의 논리 범위는 `/bookings/[id]/edit`, 실제 URL은 `/bookings/edit?id={UUID}`다. 시작 전 scheduled만 수정 가능하며 변경 없음은 저장하지 않는다.
 11. 7단계 취소는 시작 전 scheduled의 상태 변경·기록 유지, 삭제는 cancelled 또는 종료된 scheduled의 해당 레코드 제거다. 둘 다 확인 Dialog 뒤에만 실행하며 결제·환불 처리는 없다.
 12. 8단계 목록 탐색은 LocalStorage 조회 결과의 파생 UI다. `q/status/sort/page`를 URL에서 관리하고, 조건 변경은 1페이지로 초기화한다. 상세·수정·취소·삭제 이후 유효한 목록 조건으로 복귀한다.
+13. 9단계 참고 이미지는 예약당 선택적 1장이다. v2 키 `lessonconnect:bookings:v2`로 v1을 검증 후 원자적으로 마이그레이션한다. 원본 2 MiB·긴 변 1280px·변환 500 KiB 제한, JPEG/PNG/WebP만 허용한다. 저장 취소·실패는 기존 첨부를 유지한다.
 
 ## 10단계 상태
 
@@ -88,7 +93,7 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/08-l
 | 6 | 예약 수정 | Figma·문서 완료 | 구현·검증 완료 (취소·삭제 실행은 7단계) |
 | 7 | 취소·삭제 | Figma·문서 완료 | 구현·검증 완료 |
 | 8 | 검색·필터·정렬·페이지 | Figma·문서 완료 | 구현·검증 완료 |
-| 9 | 이미지 첨부·계약 확장 | 미착수 | 미착수 |
+| 9 | 이미지 첨부·계약 확장 | Figma·문서 완료 | 구현·검증 완료 |
 | 10 | 통합·검수·최종 인계 | 미착수 | 미착수 |
 
 ## 검증 기록
@@ -106,16 +111,18 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/08-l
 - 6단계 7개 390×844 핵심 차이 화면 스크린샷 검수. 5단계 폼·2단계 필드/버튼/Dialog/Alert와 4단계 상세 상태를 재사용했다. 변경 없음 CTA 비활성, 편집값·확인 체크·수정 취소, 저장 실패, 이탈 Dialog, 없는 ID·수정 불가, 성공 상세가 겹침 없이 보인다. 원본 화면은 수정하지 않았다.
 - 7단계 8개 390×844 화면 스크린샷 검수. 취소·삭제 각각 공통 Dialog Default/Processing/Error와 완료 상세·목록이 보인다. 처리 중 중복 입력 차단 상태, 실패 Alert, 삭제 복구 불가 문구, 취소 후 기록·삭제 후 0건 예시를 확인했다. 원본 화면은 수정하지 않았다.
 - 8단계 3개 390×844 화면 스크린샷 검수. 기본 페이지 컨트롤, 조건 적용 칩·요약, 결과 없음·초기화 버튼 확인. 기존 Card/Header/CTA/Bottom Nav 인스턴스를 유지하고 새 상태 칩은 컴포넌트 인스턴스로 배치했다. 목록 viewport 350×238 세로 스크롤·클립, 하단 내비게이션 y=767 확인. 앱 코드는 수정하지 않았다.
+- 9단계 공통 이미지 필드 상태 보드와 6개 390×844 생성·수정·오류·상세 프레임 스크린샷 검수. 메모 다음 이미지 영역, 상세 메모 다음 이미지 카드, 형식/크기/해석 오류, 저장 용량 초과 Alert, 제거 예정·되돌리기 상태를 확인했다. 기존 이미지 예시의 장식 가장자리를 크롭하고 자동 레이아웃 순서를 바로잡았다. 실제 파일 처리·저장은 미구현이다.
 - 런타임 F01~F17: Claude가 실행, 전부 통과 (1단계 기록).
 - 2단계 공통 UI·3단계 목록 런타임 검사: Claude가 실행, 전부 통과 (각 단계 기록).
 - 4단계 상세·5단계 생성 런타임 검사: Claude가 실행, 전체 78/78 통과 (5단계 기록).
 - 6단계 수정 런타임 검사: Claude가 실행, 전체 93/93 통과 (6단계 기록).
 - 7단계 취소·삭제 런타임 검사: Claude가 실행, 전체 106/106 통과 (7단계 기록).
 - 8단계 목록 탐색 런타임 검사: Claude가 실행, 전체 121/121 통과 (8단계 기록).
+- 9단계 참고 이미지·v2 런타임 검사: Claude가 실행, 전체 142/142 통과 (9단계 기록).
 
 ## 다음 작업 / 재개 지점
 
-Claude 1~8단계 완료. 실제 앱 프로젝트 경로는 `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`이다. **다음은 Codex 9단계(이미지 첨부·계약 확장) 설계**다. 8단계 목록 조건 계약은 `lib/bookings/discovery.ts`(파싱·정규화·검색/필터/정렬/페이지)와 `lib/bookings/routes.ts`의 `bookingListHref(context)`·`bookingDetailHref(id, context?)`·`bookingEditHref(id, context?)`에 있다(아래 "Claude 8단계 구현 기록").
+Claude 1~9단계 완료. 실제 앱 프로젝트 경로는 `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`이다. **다음은 10단계(통합·검수·최종 인계)**다. 9단계 이미지 계약 구현은 `lib/bookings/reference-image.ts`(순수 규칙·검증기), `lib/bookings/image-prepare.ts`(브라우저 변환), `components/bookings/reference-image-field.tsx`(폼 필드)에 있고, 저장 키는 `lessonconnect:bookings:v2`다(아래 "Claude 9단계 구현 기록"). 9단계 "명세·Figma와 다르게 구현한 부분"의 Codex 확인이 필요하다.
 
 **6단계 수정 구현 완료**: `components/bookings/booking-form.tsx`는 `mode: 'edit'`에서 의미 있는 예약 필드 변경만 dirty로 계산하고, 변경 없음 저장을 막는다. `lib/bookings/form.ts`의 검증·문구, `mapSaveError`, `setBookingFlash(id, 'update')`, `useLeaveGuard` + `ConfirmDialog`를 재사용한다. 정적 URL `/bookings/edit?id={UUID}`와 예정 상세 Footer `예약 수정`도 연결됐다. 자세한 검증은 아래 Claude 6단계 기록을 참조한다.
 
@@ -776,3 +783,90 @@ progress 확인: 이번 단계 시작 시 Claude 1~7단계 기록 섹션은 그�
 - 실제 모바일 기기·스크린 리더, production `out/` 정적 서버 브라우저 검사는 하지 않았다. 배포하지 않았다.
 
 Claude 8단계 완료 여부: **완료**. 9단계는 시작하지 않았다.
+
+---
+
+## Claude 9단계 구현 기록 (2026-11-12)
+
+실제 앱 프로젝트 절대 경로: `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`
+
+읽은 근거: CLAUDE.md, design/steps/09-booking-image.md, design/data-contract.md(갱신된 §1·§8 v2 계약), 이 진행 기록, 기존 `booking-form.tsx`·`booking-create-screen.tsx`·`booking-edit-screen.tsx`·`booking-detail-screen.tsx`·`booking-detail-cards.tsx`, `lib/bookings/types.ts`·`validation.ts`·`repository.ts`·`form.ts`·`messages.ts`, `components/ui/field.tsx`·`button.tsx`. Figma MCP로 `306:2964`(이미지 필드 상태 보드)와 `307:3300`(상세, 첨부 있음) 스크린샷을 직접 확인했다. 나머지 프레임(`307:2961`·`307:3044`·`307:3129`·`307:3208`·`307:3388`)은 이번에 열지 않고 명세 문구로 대조했다.
+
+progress 확인: 이번 단계 시작 시 Claude 1~8단계 기록 섹션은 그대로 있었다(Codex가 9단계 항목만 추가). 복원 작업은 필요 없었다. `design/` 문서는 이 기록 외에 수정하지 않았다.
+
+### 변경 파일
+
+| 파일 | 내용 |
+|---|---|
+| `lib/bookings/types.ts` | `ReferenceImage`·`ReferenceImageSourceMime`·`ReferenceImageChange`, `LessonBooking.referenceImage: ReferenceImage \| null`(v2 필수 키), `LessonBookingV1`, `BookingStoreV2`, `BookingInput.referenceImageChange?`(→ `BookingField`에 자동 포함) |
+| `lib/bookings/reference-image.ts` (신규) | 순수 규칙: 상수(2 MiB·1280px·500 KiB·120 code point·Data URL 최대 길이), `sniffImageMime`(JPEG/PNG/WebP 시그니처), `sanitizeFileName`(경로·제어/방향 제어 문자 제거·120 code point·빈 값은 `참고 이미지`), `isValidReferenceImage`(키 집합 일치·메타데이터 범위·prefix·디코딩 전 길이 상한·base64 형식·실제 바이트 수=`sizeBytes`·RIFF/WEBP 시그니처·RIFF 크기+8=`sizeBytes`), `normalizeImageChange`, `sameReferenceImage`, `formatImageBytes` |
+| `lib/bookings/image-prepare.ts` (신규) | 브라우저 변환: 선언 MIME → 빈 파일 → 2 MiB(디코딩 전 중단) → 시그니처·선언 MIME 일치 → `createImageBitmap(file,{imageOrientation:'from-image'})`(없으면 `<img>`+object URL, 디코딩 후 즉시 해제) → 긴 변 1280px 축소(확대 없음) → Canvas WebP 품질 0.86→0.46 5단계, 초과 시 픽셀 0.8배 최대 5회(긴 변 320px 미만으로는 줄이지 않음) → 500 KiB 이하 Blob만 Data URL → 저장소와 같은 검증기로 최종 확인. WebP 미지원(다른 MIME 반환)·제한 미달성은 `encode` 실패 |
+| `lib/bookings/validation.ts` | `parseStoreValueV1`(v1 원본 검증 전용), `parseStoreValue`(v2: 기존 필드 검증 + `referenceImage` 키 필수·null 또는 유효 이미지, 손상 이미지는 레코드 전체 손상). `validateBookingInput`이 `referenceImageChange`를 재검증해 `fieldErrors.referenceImageChange` 반환 |
+| `lib/bookings/repository.ts` | `BOOKING_STORAGE_KEY='lessonconnect:bookings:v2'`, `LEGACY_BOOKING_STORAGE_KEY='lessonconnect:bookings:v1'`. `initialize()`: v2 있으면 v2만(손상·미지원은 그대로 오류) → 없고 v1 있으면 v1 검증 후 `referenceImage:null`만 추가해 `setItem(v2)` 1회(revision·initializedAt·seedVersion·ID·시각 유지, 빈 배열 그대로, 실패 시 준비 안 됨·v1 유지·재시도 가능, v1 삭제 안 함) → 둘 다 없을 때만 v2 시드. 생성: replace면 이미지, 아니면 null. 수정: keep 유지·replace 교체·remove null, 같은 이미지·필드면 쓰기 없음, 이미지 변경만으로도 revision +1·`updatedAt` 갱신. 취소는 이미지 유지, 삭제는 레코드와 함께 제거 |
+| `lib/bookings/messages.ts` | `FIELD_MESSAGES.referenceImageChange` |
+| `lib/bookings/form.ts` | `QUOTA_MESSAGE`(`브라우저 저장 공간이 부족해요. 입력과 기존 이미지는 유지했어요.`)를 생성·수정 공통 `QUOTA_EXCEEDED` 문구로 사용. 저장소가 이미지 값을 거절하면 상단 저장 실패 알림으로 안내 |
+| `lib/bookings/index.ts` | `LEGACY_BOOKING_STORAGE_KEY` 내보내기 |
+| `components/bookings/reference-image-field.tsx` (신규) | `참고 이미지 (선택)` 필드: Empty(`참고 이미지 선택`)·Selected(변환 결과 썸네일·파일명 2줄·`변환 완료 · NKB`·`교체`/`제거`)·Error(`다른 이미지 선택`)·Remove Pending(`이미지 제거 예정` + `제거 되돌리기`), `이미지 준비 중…` 상태, 필드 아래 `role=alert` 오류 |
+| `components/bookings/booking-form.tsx` | 이미지 draft(`keep/replace/remove`)·준비 중·오류 상태. 메모 다음·확인 체크 앞에 필드 배치. draft 변경을 dirty에 포함(이탈 확인·수정 저장 활성화). 준비 중에는 저장 버튼·Enter 제출·교체/제거 차단. 제출 입력에 `referenceImageChange` 포함. `initialImage` prop |
+| `components/bookings/booking-edit-screen.tsx` | `initialImage={baseline.referenceImage}` 전달(최신 내용 확인 시 기준도 갱신) |
+| `components/bookings/booking-detail-cards.tsx` | `BookingReferenceImageCard`(152px 썸네일·파일명·`변환 후 NKB`, 표시 실패 시 오류 문구, 저장값 변경 없음). 이 파일에 `'use client'` 추가 |
+| `components/bookings/booking-detail-screen.tsx` | 메모 다음·예약 관리 전에 `referenceImage !== null`일 때만 카드 렌더 |
+| `components/bookings/booking-list-screen.tsx` | 주석의 저장 키 표기만 v2로 |
+| `app/globals.css` | 토큰 `--lc-image-thumb:88px`·`--lc-image-detail:152px`, `.lc-image-field`·`.lc-image-card*`·`.lc-detail-image*`. 기존 스타일 변경 없음 |
+| `tests/booking-image-repository.spec.ts` (신규) | Node 단위 13개(마이그레이션 6·저장 6·순수 규칙 1) |
+| `tests/booking-image.spec.ts` (신규) | 실제 브라우저 E2E 8개 |
+| 기존 테스트 7개 파일 | 시드·조회 키를 v2로, 픽스처에 `referenceImage:null`, `schemaVersion:2`. "미지원 버전" 픽스처를 v2→v3으로. 용량 초과 문구 기대값 3곳 갱신. `bookings-browser.spec.ts` 모듈 목록에 `reference-image` 추가. 검사 의미는 바꾸지 않았다 |
+
+### 명세·Figma와 다르게 구현한 부분 (Codex 확인 요청)
+
+1. **용량 초과 문구 범위**: 명세의 `브라우저 저장 공간이 부족해요. 입력과 기존 이미지는 유지했어요.`를 수정뿐 아니라 **생성 화면에도** 적용했다(이미지 없는 저장 포함). 5·6단계의 `저장 공간이 부족해요. 입력 내용은 유지했어요.`/`… 편집 중인 내용은 유지했어요.`는 더 이상 표시되지 않는다. 생성에서 "기존 이미지"가 어색하면 생성용 문구를 정해주길 바란다.
+2. **`aria-invalid` 위치**: 실제 file input은 숨김(`sr-only`, `tabIndex=-1`)이고 보이는 레이블 `참고 이미지 (선택)`과 `for`로 연결했다. 사용자가 조작하는 **보이는 트리거 버튼**(`참고 이미지 선택`/`다른 이미지 선택`/`교체`)에 `aria-invalid`와 `aria-describedby`(도움말·오류·준비 중)를 붙였다. 숨긴 input에 붙이면 제출 시 첫 오류 포커스가 보이지 않는 요소로 갈 수 있어서다. 숨긴 input도 `aria-describedby`는 갖는다. 접근성 트리에는 숨긴 input이 이름 `참고 이미지 (선택)`의 버튼으로 남는다(탭 순서에는 없음).
+3. **`제거 되돌리기`**: Figma는 카드 아래 텍스트 링크 형태다. 명세의 44px 터치 영역을 맞추려고 같은 위치에 흰 배경·중립 테두리 44px 버튼으로 만들었다.
+4. **제거 예정 상태에서 새 파일 선택**: 시안에 버튼이 없어 제공하지 않는다. 되돌리기 후 `교체`로 바꿀 수 있다.
+5. **수정 화면 기존 이미지 대체 텍스트**: 폼 안에서는 기존 첨부도 `선택한 참고 이미지: {fileName}`을 쓴다(상세만 `예약 참고 이미지:`).
+6. **준비 중 표시 위치**: `이미지 준비 중…`(`role=status`)은 카드 아래 필드 도움말 자리에 둔다. 준비 중에는 필드에 `aria-busy`.
+7. **상세 이미지 표시 실패**: `<img>` `onError` 시 카드 안에 `이미지를 표시할 수 없어요. 저장된 예약 정보는 변경하지 않았어요.`(`role=alert`)로 바꾼다(문구는 명세에 없어 새로 정함). 저장값 읽기 검증 실패는 기존대로 상세 전체 조회 실패(`CORRUPT_DATA`).
+8. **폼 검증 우회 이미지**: 저장소 `VALIDATION_ERROR`의 `referenceImageChange`는 필드 아래가 아니라 상단 저장 실패 알림 `참고 이미지를 저장할 수 없어요. 이미지를 다시 선택해주세요.`로 보인다(파일 형식 오류 문구와 섞지 않기 위해). 정상 UI에서는 생기지 않는다.
+9. **상세 썸네일**: Figma 비율대로 152px 정사각 `object-fit: cover`(원본 비율 이미지는 잘려 보임). 폼 썸네일 88px도 같다.
+10. **압축 하한**: 픽셀 축소는 긴 변 320px 미만으로 내려가지 않는다(명세는 "무한 반복·0px 금지"만 정함). 이 이하로도 500 KiB를 못 맞추면 `이미지를 준비하지 못했어요…`.
+
+### 실행한 검증 명령과 결과
+
+| 명령 | 결과 |
+|---|---|
+| `npm run typecheck` | 통과 |
+| `npm run build` | 통과. 정적 라우트 `/`, `/_not-found`, `/bookings`, `/bookings/detail`, `/bookings/edit`, `/bookings/new`(서버 기능 추가 없음) |
+| `npm run dev -- --port 3100` 후 `PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright npm test` | **142/142 통과**. 기존 121 + 9단계 21(단위 13·E2E 8) |
+
+v2 전환 직후 기존 검사 중 31개가 실패했다. 모두 테스트가 v1 키를 직접 읽고 쓰거나 `schemaVersion:2`를 "미지원 버전" 예시로 쓰던 부분이었고, 픽스처를 v2로 옮긴 뒤 31개 모두 통과했다(앱 동작 수정 없음).
+
+실제 동작 검증 — 저장소 단위(`tests/booking-image-repository.spec.ts`, 메모리 저장소):
+
+- **마이그레이션**: v1 2건(예정·취소됨) → `setItem` 1회, v2 `schemaVersion:2`·revision 7·initializedAt·seedVersion 유지, 각 예약은 v1 값 + `referenceImage:null`과 완전히 같음, v1 원본 문자열 그대로. 이후 v1을 바꿔도 v2만 읽고 다시 쓰지 않음. 빈 v1 → 빈 v2(재시드 없음). 손상 v1 → `CORRUPT_DATA`, `schemaVersion:5` v1 → `UNSUPPORTED_VERSION`, 둘 다 v2 미작성. 마이그레이션 `QuotaExceededError` → `QUOTA_EXCEEDED`, `NOT_READY` 유지, v2 없음·v1 유지, 재시도 성공. v2 손상 + v1 정상 → `CORRUPT_DATA`(v1으로 되돌아가지 않음). 키 없음 → v2 시드(`referenceImage:null`), v1 미작성.
+- **저장**: 생성 replace → 이미지 그대로 저장, 새 인스턴스(새로고침)에서 동일. 생략은 null. 수정 keep 유지 / 같은 이미지 replace는 쓰기·revision 변화 없음 / 다른 이미지 replace 교체(revision +1) / remove → null. 취소 후 이미지 유지, 삭제 후 저장값에 Data URL 없음. 수정 중 용량 초과 → 원본 문자열·기존 이미지 유지.
+- **입력 재검증 11종**: 바이트 수 불일치·`mimeType` png·png Data URL·최대 길이 초과(디코딩 전)·폭 1281·원본 2 MiB+1·원본 SVG·경로 포함 파일명·추가 키·알 수 없는 kind·문자열 → 모두 `VALIDATION_ERROR` + `fieldErrors.referenceImageChange`, 쓰기 0회.
+- **저장값 손상 3종**(잘린 WebP·height 0·문자열) → `CORRUPT_DATA`, 원본 유지.
+
+실제 동작 검증 — 브라우저 E2E(`tests/booking-image.spec.ts`, 개발 서버·실제 LocalStorage·Canvas로 만든 실제 JPEG/PNG/WebP 바이트):
+
+- **첨부·저장·새로고침**: 2400×1600 JPEG → `참고 이미지 선택`이 실제 파일 선택 창(단일 선택)을 연다 → 변환 미리보기(`data:image/webp`, alt `선택한 참고 이미지: guitar-reference.jpg`, `변환 완료 · NKB`), `교체`/`제거` 높이 44px 이상, 저장 전 LocalStorage 무변경. 저장 후 상세: `originalMimeType:image/jpeg`·`originalSizeBytes`=원본 바이트·`mimeType:image/webp`·1280×853·Data URL 디코딩 바이트 수=`sizeBytes`≤500 KiB·`RIFF…WEBP`. 상세 이미지 alt `예약 참고 이미지: …`, `naturalWidth` 1280, 카드 순서 정보→메모→참고 이미지→예약 관리. 새로고침 후에도 표시.
+- **잘못된 형식·초과 용량·해석 실패 7종**: 텍스트·SVG·PNG로 위장한 PDF·PNG MIME의 JPEG 바이트 → `JPEG, PNG, WebP 이미지만 첨부할 수 있어요.`, PNG 헤더 + 2 MiB+1 → `원본 이미지는 2MB 이하만 첨부할 수 있어요.`, 0바이트·깨진 PNG → `이미지를 열 수 없어요. 다른 파일을 선택해주세요.`. 매번 직전 미리보기(alt·src) 유지, `교체`에 `aria-invalid=true`·오류 ID가 `aria-describedby`에 포함. 이미지 없음 상태의 오류는 `다른 이미지 선택`으로 바뀌고 정상 파일을 고르면 오류 해제. 300×200 PNG는 확대 없이 300×200 저장.
+- **단계적 압축**: 1100×1100 무작위 노이즈 JPEG(원본 540,860B) — 첫 품질 WebP 873,024B(500 KiB 초과) → 저장 476,972B·880×880(비율 유지). 품질·픽셀 축소 경로가 실제로 실행됨을 확인.
+- **준비 중 차단**: 디코딩을 붙잡은 상태에서 `이미지 준비 중…`, `예약하기`·`교체`·`제거` 비활성, Enter 제출 무동작 → 풀면 새 미리보기·저장 활성.
+- **수정 흐름**: 기존 첨부 표시·변경 없음 저장 비활성 → `교체`(이미지만 바꿔도 저장 활성) → `수정 취소`→`계속 작성`이면 새 미리보기 유지 → `나가기`면 상세에 기존 이미지, LocalStorage 원본 문자열 그대로. `제거` → `이미지 제거 예정`·`저장 전에는 기존 이미지가 유지돼요` → `제거 되돌리기` → 기존 미리보기·변경 없음. 교체 후 제거 → 제거 예정 → 저장 → 성공 알림, 상세 이미지 카드 없음, `referenceImage:null`, 메모 유지, revision +1, 새로고침 후에도 카드 없음.
+- **저장 실패**: 새 이미지·메모·체크 후 실제 origin 저장 공간을 다른 키로 채움 → 상단 알림 `변경 내용을 저장하지 못했어요` + 용량 초과 문구, URL 유지, 준비한 미리보기·메모·체크 유지, 원본 문자열 그대로, 이미지 필드 오류 없음(혼합 안 함). 일반 쓰기 예외 → 공통 실패 문구, 동일하게 보존. 복구 후 재시도 → 새 이미지(1280×960)·메모 저장.
+- **첨부 없는 v1 예약**: v1 키만 시드 → 상세 정상(메모 표시, 이미지 카드 없음), v2에 `{...v1, referenceImage:null}`, v1 원본 유지. 수정에서 WebP 400×300만 추가해도 저장 → 상세 표시.
+- **390×844·접근성**: 메모에서 Tab → `참고 이미지 선택` 포커스, Enter로 선택 창. 216자 파일명 → `title`·alt에 120 code point 안전 이름, 표시 2줄 이하, 가로 넘침 없음. 이미지 필드를 스크롤해도 `제거` 버튼 하단 ≤ 고정 Footer 상단. 상세 카드도 Footer와 겹치지 않고 390 안. 전 검사 콘솔 오류 없음.
+
+디자인 확인(시각): 390×844로 빈 상태·형식 오류·선택됨·제거 예정(수정)·상세를 직접 촬영해 Figma `306:2964`·`307:3300`과 비교했다. 필드 위치(메모 다음·확인 체크 앞), 상시 `JPEG · PNG · WebP · 원본 최대 2MB`, 선택됨 카드 구성, 오류 시 `다른 이미지 선택`/`파일을 선택해 다시 시도해주세요` + 아래 빨간 문구, `긴 변 1280px · 변환 후 최대 500KB`/`이 브라우저에만 저장돼요.` 보조 문구, 상세의 메모 다음 카드·Footer 고정이 일치한다. 차이는 위 "다르게 구현한 부분". 픽셀 비교 도구는 쓰지 않았다.
+
+### 알려진 제한 / 미검증
+
+- **EXIF 회전**: `createImageBitmap(…, {imageOrientation:'from-image'})`로 브라우저 해석 방향을 쓰도록 구현했지만, EXIF 방향 태그가 있는 실제 사진으로는 검사하지 않았다.
+- **WebP 인코딩 미지원 브라우저**(구형 Safari 등)는 `toBlob`이 PNG를 돌려줘 `이미지를 준비하지 못했어요…`가 된다. Chromium(headless shell)에서만 검사했다.
+- **LocalStorage 총량**: 이미지 1장의 Data URL은 최대 약 68만 문자라, 브라우저 한도(보통 origin당 약 5M 문자)에서는 이미지가 있는 예약을 대략 7건 안팎만 저장할 수 있다. 넘으면 `QUOTA_EXCEEDED`로 안내하며 기존 첨부를 자동으로 지우지 않는다. 마이그레이션 후 v1 원본을 지우지 않으므로 그 크기도 계속 차지한다.
+- **구버전 탭 새로고침 안내**: 계약은 "마이그레이션 후 열린 기존 탭은 새로고침하도록 안내"라고 했지만, 구버전 탭은 구버전 코드로 동작해 새 코드가 안내를 띄울 수 없다. 별도 안내 UI는 만들지 않았다. 구버전 탭은 v1 키만 계속 쓰며, 그 변경은 v2에 병합되지 않는다(계약대로).
+- 매 조회마다 저장된 모든 이미지의 base64 형식을 정규식으로 검사한다. 7건 정도에서는 체감 지연이 없었지만 측정하지 않았다.
+- 실제 모바일 기기·스크린 리더, production `out/` 정적 서버 브라우저 검사는 하지 않았다. 배포하지 않았다.
+
+Claude 9단계 완료 여부: **완료**. 10단계는 시작하지 않았다.

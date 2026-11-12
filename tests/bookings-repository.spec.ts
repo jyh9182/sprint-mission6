@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
 import { BOOKING_STORAGE_KEY, createBookingRepository, type StorageLike } from '../lib/bookings/repository';
 import { getBookingCatalog } from '../lib/bookings/catalog';
 import { getBookingPhase, seoulDate } from '../lib/bookings/time';
-import type { BookingCatalog, BookingInput, BookingRepository, BookingStoreV1, StoreResult } from '../lib/bookings/types';
+import type { BookingCatalog, BookingInput, BookingRepository, BookingStoreV2, StoreResult } from '../lib/bookings/types';
 
 class MemoryStorage implements StorageLike {
   values = new Map<string, string>();
@@ -23,7 +23,7 @@ class MemoryStorage implements StorageLike {
   raw() {
     return this.values.get(BOOKING_STORAGE_KEY) ?? null;
   }
-  json(): BookingStoreV1 {
+  json(): BookingStoreV2 {
     return JSON.parse(this.raw()!);
   }
 }
@@ -154,7 +154,7 @@ test.describe('booking repository', () => {
     unwrap(await repo.cancelBooking(seed.id, 1));
     unwrap(await repo.deleteBooking(seed.id, 2));
     const stored = storage.json();
-    expect(stored).toMatchObject({ schemaVersion: 1, seedVersion: 1, revision: 3, bookings: [] });
+    expect(stored).toMatchObject({ schemaVersion: 2, seedVersion: 1, revision: 3, bookings: [] });
     const before = storage.setCalls;
     const reloaded = unwrap(await newRepo().initialize());
     expect(reloaded).toEqual({ bookings: [], revision: 3 });
@@ -176,7 +176,9 @@ test.describe('booking repository', () => {
       ['bad status invariant', JSON.stringify({ ...good, bookings: [{ ...good.bookings[0], status: 'cancelled', cancelledAt: null }] }), 'CORRUPT_DATA'],
       ['duplicate id', JSON.stringify({ ...good, bookings: [good.bookings[0], good.bookings[0]] }), 'CORRUPT_DATA'],
       ['missing schemaVersion', JSON.stringify({ ...good, schemaVersion: undefined }), 'CORRUPT_DATA'],
-      ['version 2', JSON.stringify({ ...good, schemaVersion: 2 }), 'UNSUPPORTED_VERSION'],
+      ['version 3', JSON.stringify({ ...good, schemaVersion: 3 }), 'UNSUPPORTED_VERSION'],
+      ['v1 envelope in v2 key', JSON.stringify({ ...good, schemaVersion: 1 }), 'UNSUPPORTED_VERSION'],
+      ['missing referenceImage key', JSON.stringify({ ...good, bookings: [{ ...good.bookings[0], referenceImage: undefined }] }), 'CORRUPT_DATA'],
     ];
     for (const [name, raw, code] of cases) {
       const storage = new MemoryStorage();

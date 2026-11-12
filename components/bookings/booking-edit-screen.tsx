@@ -312,6 +312,7 @@ function BookingEditReady({
         cancelLabel="수정 취소"
         submitBlocked={Boolean(conflict) || noLongerEditable}
         notice={notice}
+        initialImage={baseline.referenceImage}
         unavailableLabels={{
           offer: `${instructorDisplayName(snapshot.instructorName)} · ${snapshot.instrumentLabel}`,
           space: `${snapshot.studioName} · ${snapshot.roomName}`,

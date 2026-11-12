@@ -5,7 +5,7 @@ import { formatLessonDate } from '../lib/bookings/format';
 // 3단계 예약 목록(/bookings). 실제 LocalStorage 저장소에서 읽는 화면을 개발 서버(또는 LANDING_TEST_URL)에서 검사한다.
 const base = process.env.LANDING_TEST_URL || 'http://localhost:3100';
 const LIST = new URL('/bookings', base).toString();
-const KEY = 'lessonconnect:bookings:v1';
+const KEY = 'lessonconnect:bookings:v2'; // 9단계부터 활성 키(v1은 마이그레이션 원본, booking-image.spec.ts에서 검증)
 const HOUR = 3600e3;
 const DAY = 24 * HOUR;
 const FOCUS_BLUE = 'rgb(56, 117, 199)';
@@ -46,11 +46,12 @@ function booking(f: Fixture) {
     createdAt: created,
     updatedAt: created,
     cancelledAt: status === 'cancelled' ? created : null,
+    referenceImage: null,
   };
 }
 
 const store = (bookings: ReturnType<typeof booking>[]) =>
-  JSON.stringify({ schemaVersion: 1, revision: 3, initializedAt: new Date(Date.now() - 30 * DAY).toISOString(), seedVersion: 1, bookings });
+  JSON.stringify({ schemaVersion: 2, revision: 3, initializedAt: new Date(Date.now() - 30 * DAY).toISOString(), seedVersion: 1, bookings });
 
 function watchErrors(page: Page) {
   const failures: string[] = [];
@@ -152,7 +153,7 @@ test('읽기 실패: 데이터 보존, 오류·재시도, 성공 후에만 목�
 });
 
 test('지원하지 않는 버전: 앱 버전 확인 문구', async ({ page }) => {
-  await openWith(page, JSON.stringify({ schemaVersion: 2, bookings: [] }));
+  await openWith(page, JSON.stringify({ schemaVersion: 3, bookings: [] }));
   await expect(page.getByRole('alert').filter({ hasText: '예약을 불러오지 못했어요' })).toContainText('현재 앱에서 지원하지 않는 예약 데이터예요. 앱 버전을 확인해주세요.');
 });
 

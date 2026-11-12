@@ -1,4 +1,4 @@
-// LocalStorage 예약 저장소 — design/data-contract.md §5~6.
+// LocalStorage 예약 저장소 — design/data-contract.md §5~6, §8(v2 참고 이미지·v1 마이그레이션).
 // 이 모듈만 LocalStorage에 접근한다. import 시점에는 window를 읽지 않는다.
 
 import { getBookingCatalog, SEED_DAYS_AHEAD, SEED_OFFER_ID, SEED_SPACE_ID, SEED_START_TIME } from './catalog';
@@ -12,15 +12,19 @@ import type {
   BookingInput,
   BookingListData,
   BookingRepository,
-  BookingStoreV1,
+  BookingStoreV2,
   DeleteBookingData,
   LessonBooking,
   StoreErrorCode,
   StoreResult,
 } from './types';
-import { buildSnapshot, isUuidV4, parseStoreValue, validateBookingInput } from './validation';
+import { sameReferenceImage } from './reference-image';
+import { buildSnapshot, isUuidV4, parseStoreValue, parseStoreValueV1, validateBookingInput } from './validation';
 
-export const BOOKING_STORAGE_KEY = 'lessonconnect:bookings:v1';
+/** 활성 키. 예약과 참고 이미지를 같은 envelope에 저장한다. */
+export const BOOKING_STORAGE_KEY = 'lessonconnect:bookings:v2';
+/** v1 키는 마이그레이션 원본으로 읽기만 한다. 쓰거나 자동 삭제하지 않는다. */
+export const LEGACY_BOOKING_STORAGE_KEY = 'lessonconnect:bookings:v1';
 
 /** 테스트 대역과 실제 localStorage 모두 만족하는 최소 인터페이스. */
 export type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
@@ -34,8 +38,8 @@ export interface BookingRepositoryOptions {
 }
 
 type Failure = { ok: false; error: { code: StoreErrorCode; message: string; fieldErrors?: Partial<Record<BookingField, string>> } };
-type ReadResult = { ok: true; store: BookingStoreV1 | null } | Failure;
-type Plan<T> = { ok: true; data: T; next?: BookingStoreV1 } | Failure;
+type ReadResult = { ok: true; store: BookingStoreV2 | null } | Failure;
+type Plan<T> = { ok: true; data: T; next?: BookingStoreV2 } | Failure;
 
 function fail(code: StoreErrorCode, fieldErrors?: Partial<Record<BookingField, string>>): Failure {
   return { ok: false, error: fieldErrors ? { code, message: ERROR_MESSAGES[code], fieldErrors } : { code, message: ERROR_MESSAGES[code] } };
@@ -71,7 +75,7 @@ function sortBookings(bookings: LessonBooking[]): LessonBooking[] {
   return [...bookings].sort((a, b) => lessonWindow(a).start - lessonWindow(b).start || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }
 
-function overlapsOther(store: BookingStoreV1, date: string, startTime: string, excludeId?: string): boolean {
+function overlapsOther(store: BookingStoreV2, date: string, startTime: string, excludeId?: string): boolean {
   const target = lessonWindow({ date, startTime });
   return store.bookings.some((b) => {
     if (b.id === excludeId || b.status === 'cancelled') return false;
@@ -120,13 +124,18 @@ export function createBookingRepository(options: BookingRepositoryOptions = {}):
     return storage ? { ok: true, storage } : fail('NOT_READY');
   }
 
-  function read(storage: StorageLike): ReadResult {
-    let raw: string | null;
+  function getRaw(storage: StorageLike, key: string): { ok: true; raw: string | null } | Failure {
     try {
-      raw = storage.getItem(BOOKING_STORAGE_KEY);
+      return { ok: true, raw: storage.getItem(key) };
     } catch {
       return fail('STORAGE_UNAVAILABLE');
     }
+  }
+
+  function read(storage: StorageLike): ReadResult {
+    const got = getRaw(storage, BOOKING_STORAGE_KEY);
+    if (!got.ok) return got;
+    const raw = got.raw;
     if (raw === null) return { ok: true, store: null };
     const parsed = parseStoreValue(raw);
     if (parsed.kind === 'unsupported-version') return fail('UNSUPPORTED_VERSION');
@@ -135,7 +144,7 @@ export function createBookingRepository(options: BookingRepositoryOptions = {}):
   }
 
   /** 다음 전체값을 한 번의 setItem으로 저장한다. 원본을 먼저 지우지 않는다. */
-  function write(storage: StorageLike, next: BookingStoreV1): { ok: true } | Failure {
+  function write(storage: StorageLike, next: BookingStoreV2): { ok: true } | Failure {
     let json: string;
     try {
       json = JSON.stringify(next);
@@ -160,12 +169,12 @@ export function createBookingRepository(options: BookingRepositoryOptions = {}):
     }
   }
 
-  function listData(store: BookingStoreV1): StoreResult<BookingListData> {
+  function listData(store: BookingStoreV2): StoreResult<BookingListData> {
     return { ok: true, data: structuredClone({ bookings: sortBookings(store.bookings), revision: store.revision }) };
   }
 
   /** ready 이후 최신값 읽기. 실행 중 키가 사라졌으면 자동 시드하지 않고 CONFLICT. */
-  function readReady(): { ok: true; storage: StorageLike; store: BookingStoreV1 } | Failure {
+  function readReady(): { ok: true; storage: StorageLike; store: BookingStoreV2 } | Failure {
     if (!ready) return fail('NOT_READY');
     const resolved = resolveStorage();
     if (!resolved.ok) return resolved;
@@ -175,7 +184,7 @@ export function createBookingRepository(options: BookingRepositoryOptions = {}):
     return { ok: true, storage: resolved.storage, store: result.store };
   }
 
-  function mutate<T>(expectedRevision: number, plan: (store: BookingStoreV1, now: Date) => Plan<T>): Promise<StoreResult<T>> {
+  function mutate<T>(expectedRevision: number, plan: (store: BookingStoreV2, now: Date) => Plan<T>): Promise<StoreResult<T>> {
     return serialize<T>(() => {
       const current = readReady();
       if (!current.ok) return current;
@@ -191,11 +200,11 @@ export function createBookingRepository(options: BookingRepositoryOptions = {}):
     }, 'WRITE_FAILED');
   }
 
-  function findBooking(store: BookingStoreV1, id: unknown): LessonBooking | undefined {
+  function findBooking(store: BookingStoreV2, id: unknown): LessonBooking | undefined {
     return isUuidV4(id) ? store.bookings.find((b) => b.id === id) : undefined;
   }
 
-  function nextRevision(store: BookingStoreV1): number | null {
+  function nextRevision(store: BookingStoreV2): number | null {
     const revision = store.revision + 1;
     return Number.isSafeInteger(revision) ? revision : null;
   }
@@ -210,7 +219,30 @@ export function createBookingRepository(options: BookingRepositoryOptions = {}):
       return listData(result.store);
     }
 
-    // 키가 null인 최초 초기화만 시드한다. 빈 배열 저장소는 위에서 그대로 반환된다.
+    // v2가 없고 v1이 있으면: v1을 기존 검증기로 엄격하게 확인한 뒤 referenceImage:null만 추가해 한 번에 쓴다.
+    // 빈 배열도 그대로 옮기며 재시드하지 않는다. 쓰기 실패 시 v1은 그대로이고 준비 완료로 표시하지 않는다.
+    const legacy = getRaw(resolved.storage, LEGACY_BOOKING_STORAGE_KEY);
+    if (!legacy.ok) return legacy;
+    if (legacy.raw !== null) {
+      const parsed = parseStoreValueV1(legacy.raw);
+      if (parsed.kind === 'unsupported-version') return fail('UNSUPPORTED_VERSION');
+      if (parsed.kind === 'corrupt') return fail('CORRUPT_DATA');
+      const v1 = parsed.store;
+      const migrated: BookingStoreV2 = {
+        schemaVersion: 2,
+        revision: v1.revision,
+        initializedAt: v1.initializedAt,
+        seedVersion: v1.seedVersion,
+        bookings: v1.bookings.map((booking) => ({ ...booking, referenceImage: null })),
+      };
+      const written = write(resolved.storage, migrated);
+      if (!written.ok) return written;
+      ready = true;
+      emit();
+      return listData(migrated);
+    }
+
+    // v1·v2 모두 없는 최초 초기화만 시드한다. 빈 배열 저장소는 위에서 그대로 반환된다.
     const now = clock();
     const nowIso = now.toISOString();
     const offer = catalog.offers.find((o) => o.id === SEED_OFFER_ID);
@@ -234,8 +266,9 @@ export function createBookingRepository(options: BookingRepositoryOptions = {}):
       createdAt: nowIso,
       updatedAt: nowIso,
       cancelledAt: null,
+      referenceImage: null,
     };
-    const store: BookingStoreV1 = { schemaVersion: 1, revision: 1, initializedAt: nowIso, seedVersion: 1, bookings: [seed] };
+    const store: BookingStoreV2 = { schemaVersion: 2, revision: 1, initializedAt: nowIso, seedVersion: 1, bookings: [seed] };
     const written = write(resolved.storage, store);
     if (!written.ok) return written;
     ready = true;
@@ -298,8 +331,9 @@ export function createBookingRepository(options: BookingRepositoryOptions = {}):
           createdAt: nowIso,
           updatedAt: nowIso,
           cancelledAt: null,
+          referenceImage: v.referenceImageChange.kind === 'replace' ? v.referenceImageChange.image : null,
         };
-        const next: BookingStoreV1 = { ...store, revision, bookings: [...store.bookings, booking] };
+        const next: BookingStoreV2 = { ...store, revision, bookings: [...store.bookings, booking] };
         return { ok: true, data: { booking, revision }, next };
       });
     },
@@ -312,13 +346,16 @@ export function createBookingRepository(options: BookingRepositoryOptions = {}):
         const validation = validateBookingInput(input, catalog, now);
         if (!validation.ok) return fail('VALIDATION_ERROR', validation.fieldErrors);
         const v = validation.value;
+        const change = v.referenceImageChange;
+        const referenceImage = change.kind === 'replace' ? change.image : change.kind === 'remove' ? null : existing.referenceImage;
 
         const unchanged =
           v.offer.id === existing.offerId &&
           v.space.id === existing.spaceId &&
           v.date === existing.date &&
           v.startTime === existing.startTime &&
-          v.memo === existing.memo;
+          v.memo === existing.memo &&
+          sameReferenceImage(referenceImage, existing.referenceImage);
         if (unchanged) return { ok: true, data: { booking: existing, revision: store.revision } };
 
         if (overlapsOther(store, v.date, v.startTime, existing.id)) return fail('LOCAL_TIME_CONFLICT');
@@ -337,9 +374,10 @@ export function createBookingRepository(options: BookingRepositoryOptions = {}):
           date: v.date,
           startTime: v.startTime,
           memo: v.memo,
+          referenceImage,
           updatedAt: laterIso(now.toISOString(), existing.updatedAt),
         };
-        const next: BookingStoreV1 = { ...store, revision, bookings: store.bookings.map((b) => (b.id === existing.id ? booking : b)) };
+        const next: BookingStoreV2 = { ...store, revision, bookings: store.bookings.map((b) => (b.id === existing.id ? booking : b)) };
         return { ok: true, data: { booking, revision }, next };
       });
     },
@@ -354,7 +392,7 @@ export function createBookingRepository(options: BookingRepositoryOptions = {}):
         if (revision === null) return fail('WRITE_FAILED');
         const at = laterIso(now.toISOString(), existing.updatedAt);
         const booking: LessonBooking = { ...existing, status: 'cancelled', cancelledAt: at, updatedAt: at };
-        const next: BookingStoreV1 = { ...store, revision, bookings: store.bookings.map((b) => (b.id === existing.id ? booking : b)) };
+        const next: BookingStoreV2 = { ...store, revision, bookings: store.bookings.map((b) => (b.id === existing.id ? booking : b)) };
         return { ok: true, data: { booking, revision }, next };
       });
     },
@@ -368,7 +406,7 @@ export function createBookingRepository(options: BookingRepositoryOptions = {}):
         const revision = nextRevision(store);
         if (revision === null) return fail('WRITE_FAILED');
         // 0건이 되어도 envelope(초기화 정보)는 유지해 재시드되지 않게 한다
-        const next: BookingStoreV1 = { ...store, revision, bookings: store.bookings.filter((b) => b.id !== existing.id) };
+        const next: BookingStoreV2 = { ...store, revision, bookings: store.bookings.filter((b) => b.id !== existing.id) };
         return { ok: true, data: { deletedId: existing.id, revision }, next };
       });
     },

@@ -206,6 +206,8 @@ export type BookingFormSubmitResult =
   | { ok: true }
   | { ok: false; alert?: FormSubmitAlert; fieldErrors?: BookingFormErrors; revalidate?: boolean };
 
+export const QUOTA_MESSAGE = '브라우저 저장 공간이 부족해요. 입력과 기존 이미지는 유지했어요.';
+
 /** 생성/수정 화면의 실패 문구 차이(5단계 Save Error · 6단계 Edit Save Error). */
 const SAVE_COPY = {
   create: { title: '예약을 저장하지 못했어요', keep: '입력 내용은 유지했어요.' },
@@ -234,6 +236,10 @@ export function mapSaveError(
       if (f.spaceId) fieldErrors.spaceId = FORM_MESSAGES.spaceUnavailable;
       if (f.memo) fieldErrors.memo = FORM_MESSAGES.memoTooLong;
       if (f.acknowledged) fieldErrors.acknowledged = FORM_MESSAGES.acknowledgedRequired;
+      if (f.referenceImageChange) {
+        // 폼 검증을 우회한 이미지 값. 파일 형식 오류와 섞지 않고 저장 실패 알림으로 안내한다.
+        return { ok: false, fieldErrors, revalidate: true, alert: { title: SAVE_FAILED_TITLE, message: `참고 이미지를 저장할 수 없어요. 이미지를 다시 선택해주세요.\n${KEEP_INPUT}` } };
+      }
       return { ok: false, fieldErrors, revalidate: true };
     }
     case 'CONFLICT':
@@ -242,7 +248,8 @@ export function mapSaveError(
         alert: { title: '다른 화면에서 예약 정보가 변경됐어요', message: `최신 예약 정보를 다시 불러왔어요. ${KEEP_INPUT} 내용을 확인한 뒤 다시 시도해주세요.` },
       };
     case 'QUOTA_EXCEEDED':
-      return { ok: false, alert: { title: SAVE_FAILED_TITLE, message: `저장 공간이 부족해요. ${KEEP_INPUT}` } };
+      // 9단계: 입력·준비한 이미지·제거 예정과 저장된 기존 이미지를 모두 보존한다(자동으로 첨부를 지우지 않음).
+      return { ok: false, alert: { title: SAVE_FAILED_TITLE, message: QUOTA_MESSAGE } };
     case 'CORRUPT_DATA':
     case 'UNSUPPORTED_VERSION':
       return { ok: false, alert: { title: SAVE_FAILED_TITLE, message: `${error.message}\n${KEEP_INPUT}` } };

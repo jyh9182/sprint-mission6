@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 // 8단계 예약 목록 탐색(design/steps/08-list-discovery.md). 검색·상태·정렬·페이지와 URL 쿼리 동기화,
 // 상세·수정·삭제에서 목록 조건 유지를 실제 LocalStorage 저장소로 검사한다.
 const base = process.env.LANDING_TEST_URL || 'http://localhost:3100';
-const KEY = 'lessonconnect:bookings:v1';
+const KEY = 'lessonconnect:bookings:v2'; // 9단계부터 활성 키(v1은 마이그레이션 원본, booking-image.spec.ts에서 검증)
 const HOUR = 3600e3;
 const DAY = 24 * HOUR;
 const seoulDate = (ms: number) => new Date(ms + 9 * HOUR).toISOString().slice(0, 10);
@@ -50,12 +50,13 @@ function booking(f: Fixture = {}) {
     createdAt: created,
     updatedAt: created,
     cancelledAt: status === 'cancelled' ? created : null,
+    referenceImage: null,
   };
 }
 type B = ReturnType<typeof booking>;
 
 const store = (bookings: B[]) =>
-  JSON.stringify({ schemaVersion: 1, revision: 3, initializedAt: '2026-01-01T00:00:00.000Z', seedVersion: 1, bookings });
+  JSON.stringify({ schemaVersion: 2, revision: 3, initializedAt: '2026-01-01T00:00:00.000Z', seedVersion: 1, bookings });
 
 /** n일 뒤 예정 예약(같은 시각) */
 const future = (days: number, f: Fixture = {}) => booking({ date: seoulDate(Date.now() + days * DAY), startTime: '18:00', ...f });

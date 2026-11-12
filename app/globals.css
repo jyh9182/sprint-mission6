@@ -183,3 +183,25 @@ dialog.lc-dialog::backdrop{background:var(--lc-backdrop);backdrop-filter:none}
 .lc-button.lc-pagination__button{width:var(--lc-pagination-button-width);height:var(--lc-compact-height);padding:0;border-radius:var(--lc-radius-compact)}
 .lc-button.lc-pagination__button:disabled{border-color:transparent;background:var(--lc-surface);color:var(--lc-muted);opacity:1}
 .lc-pagination__current{text-align:center;font-size:14px;line-height:20px;font-weight:500;color:var(--lc-ink)}
+/* 9단계 참고 이미지 — Figma 306:2964(Empty 306:2936 · Selected 306:2944 · Error 306:2956 · Remove Pending 309:3225), 상세 307:3300 */
+:root{--lc-image-thumb:88px;--lc-image-detail:152px}
+.lc-image-field .lc-field__help:empty{display:none}
+.lc-image-card{display:flex;align-items:center;gap:var(--lc-space-4);width:100%;min-width:0;min-height:var(--lc-image-thumb);padding:var(--lc-space-4);border:var(--lc-stroke) solid var(--lc-border);border-radius:var(--lc-radius-card);background:var(--lc-white);color:var(--lc-ink);text-align:left}
+.lc-image-card.lc-image-card--trigger{justify-content:flex-start;height:auto;white-space:normal;font-weight:400;cursor:pointer}
+.lc-image-card.lc-image-card--trigger:focus-visible{outline:var(--lc-stroke-focus) solid var(--lc-focus);outline-offset:2px}
+.lc-image-card.lc-image-card--trigger:disabled{opacity:var(--lc-disabled-opacity)}
+.lc-image-card--selected{align-items:flex-start}
+.lc-image-card__icon{width:20px;height:20px;flex-shrink:0;border:var(--lc-stroke) solid var(--lc-muted);background:repeating-linear-gradient(135deg,var(--lc-muted) 0 1px,transparent 1px 4px)}
+.lc-image-card__thumb{width:var(--lc-image-thumb);height:var(--lc-image-thumb);flex-shrink:0;object-fit:cover;border-radius:var(--lc-radius-compact);background:var(--lc-surface)}
+.lc-image-card__body{display:flex;flex:1 1 auto;flex-direction:column;gap:var(--lc-space-1);min-width:0}
+.lc-image-card__title,.lc-image-card__name{font-size:14px;line-height:21px;font-weight:700;overflow-wrap:anywhere}
+.lc-image-card__name{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lc-image-card__meta{font-size:12px;line-height:18px;color:var(--lc-muted)}
+.lc-image-card__actions{display:flex;gap:var(--lc-space-2);margin-top:var(--lc-space-2)}
+.lc-button.lc-image-card__action,.lc-button.lc-image-field__undo{height:var(--lc-compact-action-height);padding:0 var(--lc-space-4);border:var(--lc-stroke) solid var(--lc-border);border-radius:var(--lc-radius-control);background:var(--lc-white);font-size:14px;line-height:20px;font-weight:500}
+.lc-button.lc-image-card__action{flex:1 1 0;min-width:0;padding:0 var(--lc-space-2)}
+.lc-button.lc-image-field__undo{align-self:flex-start}
+.lc-detail-image__body{display:flex;align-items:flex-start;gap:var(--lc-space-4);min-width:0}
+.lc-detail-image__img{width:var(--lc-image-detail);height:var(--lc-image-detail);flex-shrink:0;object-fit:cover;border-radius:var(--lc-radius-compact);background:var(--lc-surface)}
+.lc-detail-image__meta{display:flex;flex-direction:column;gap:var(--lc-space-2);min-width:0}
+.lc-detail-image__name,.lc-detail-image__size{font-size:12px;line-height:18px;color:var(--lc-muted);overflow-wrap:anywhere}

@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 // 5단계 예약 생성(/bookings/new). 실제 LocalStorage 저장소에 쓰는 화면을 개발 서버(또는 LANDING_TEST_URL)에서 검사한다.
 const base = process.env.LANDING_TEST_URL || 'http://localhost:3100';
 const NEW_PATH = '/bookings/new';
-const KEY = 'lessonconnect:bookings:v1';
+const KEY = 'lessonconnect:bookings:v2'; // 9단계부터 활성 키(v1은 마이그레이션 원본, booking-image.spec.ts에서 검증)
 const HOUR = 3600e3;
 const DAY = 24 * HOUR;
 const DETAIL_RE = /\/bookings\/detail\?id=[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -17,11 +17,11 @@ function seedBooking(date: string, startTime: string) {
   return {
     id: randomUUID(), offerId: 'offer-kim-guitar-60', instructorId: 'instructor-kim-minjun', spaceId: 'space-dongtan-a', catalogVersion: '1',
     snapshot: { instructorName: '김민준', instrumentId: 'guitar', instrumentLabel: '기타', genres: ['rock', 'blues'], studioName: '동탄 스튜디오', roomName: 'A 레슨실', equipmentLabels: ['기타', '앰프'], examplePriceKRW: 50000, currency: 'KRW', durationMinutes: 60 },
-    date, startTime, timeZone: 'Asia/Seoul', memo: '', status: 'scheduled', source: 'seed', createdAt: created, updatedAt: created, cancelledAt: null,
+    date, startTime, timeZone: 'Asia/Seoul', memo: '', status: 'scheduled', source: 'seed', createdAt: created, updatedAt: created, cancelledAt: null, referenceImage: null,
   };
 }
 const storeOf = (bookings: unknown[], revision = 1) =>
-  JSON.stringify({ schemaVersion: 1, revision, initializedAt: new Date(Date.now() - 2 * DAY).toISOString(), seedVersion: 1, bookings });
+  JSON.stringify({ schemaVersion: 2, revision, initializedAt: new Date(Date.now() - 2 * DAY).toISOString(), seedVersion: 1, bookings });
 
 function watchErrors(page: Page) {
   const failures: string[] = [];
@@ -238,7 +238,7 @@ test('저장 실패(용량 초과·쓰기 실패): 이동 없이 입력 유지, 
   await submit(page).click();
   const alert = page.locator('.lc-alert--error');
   await expect(alert).toContainText('예약을 저장하지 못했어요');
-  await expect(alert).toContainText('저장 공간이 부족해요. 입력 내용은 유지했어요.');
+  await expect(alert).toContainText('브라우저 저장 공간이 부족해요. 입력과 기존 이미지는 유지했어요.');
   await expect(alert).toBeInViewport(); // 스크롤 위치를 바꾸지 않아도 보이는 고정 알림
   expect(Math.abs((await memoY()) - memoBefore)).toBeLessThanOrEqual(1); // 보던 입력 위치 유지(맨 위로 튀지 않음)
   await expect(page).toHaveURL(new URL(NEW_PATH, base).toString());

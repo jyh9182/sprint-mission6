@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 
 // 7단계 예약 취소·기록 삭제(design/steps/07-cancel-delete.md). 실제 LocalStorage 저장소를 쓰는 화면을 개발 서버(또는 LANDING_TEST_URL)에서 검사한다.
 const base = process.env.LANDING_TEST_URL || 'http://localhost:3100';
-const KEY = 'lessonconnect:bookings:v1';
+const KEY = 'lessonconnect:bookings:v2'; // 9단계부터 활성 키(v1은 마이그레이션 원본, booking-image.spec.ts에서 검증)
 const HOUR = 3600e3;
 const DAY = 24 * HOUR;
 
@@ -32,12 +32,13 @@ function booking(f: Fixture = {}) {
     createdAt: created,
     updatedAt: created,
     cancelledAt: status === 'cancelled' ? created : null,
+    referenceImage: null,
   };
 }
 type Booking = ReturnType<typeof booking>;
 const INITIALIZED_AT = new Date(Date.now() - 10 * DAY).toISOString();
 const storeOf = (bookings: Booking[], revision = 3) =>
-  JSON.stringify({ schemaVersion: 1, revision, initializedAt: INITIALIZED_AT, seedVersion: 1, bookings });
+  JSON.stringify({ schemaVersion: 2, revision, initializedAt: INITIALIZED_AT, seedVersion: 1, bookings });
 
 function watchErrors(page: Page) {
   const failures: string[] = [];
@@ -265,7 +266,7 @@ test('삭제 성공: 대상 1건만 제거·목록 이동·성공 알림 1회(�
   await expect(page.locator(`a[href="/bookings/detail?id=${target.id}"]`)).toHaveCount(0);
 
   const s = await stored(page);
-  expect(s).toMatchObject({ schemaVersion: 1, revision: 4, initializedAt: INITIALIZED_AT, seedVersion: 1 });
+  expect(s).toMatchObject({ schemaVersion: 2, revision: 4, initializedAt: INITIALIZED_AT, seedVersion: 1 });
   expect(s.bookings).toEqual([other]);
 
   // 브라우저 뒤로가기로 이전 상세에 돌아가도 최신 저장소를 읽어 없는 ID로 보인다
@@ -319,7 +320,7 @@ test('전체 삭제 후 0건, 새로고침·재방문해도 시드 재생성 없
     await expect(page.locator('.lc-booking-card')).toHaveCount(0);
   }
   const s = await stored(page);
-  expect(s).toMatchObject({ schemaVersion: 1, revision: 5, initializedAt: INITIALIZED_AT, seedVersion: 1, bookings: [] });
+  expect(s).toMatchObject({ schemaVersion: 2, revision: 5, initializedAt: INITIALIZED_AT, seedVersion: 1, bookings: [] });
   expect(failures).toEqual([]);
 });
 

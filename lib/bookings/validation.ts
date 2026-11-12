@@ -1,11 +1,15 @@
 import { FIELD_MESSAGES } from './messages';
 import { endsSameSeoulDay, isValidISOInstant, isValidLocalDate, isValidLocalTime, seoulStartMs } from './time';
+import { isValidReferenceImage, normalizeImageChange } from './reference-image';
 import {
   GENRE_IDS,
   type BookingCatalog,
   type BookingField,
   type BookingStoreV1,
+  type BookingStoreV2,
   type LessonBooking,
+  type LessonBookingV1,
+  type ReferenceImageChange,
   type LessonOfferReference,
   type LessonSnapshot,
   type SpaceReference,
@@ -23,12 +27,12 @@ export function isUuidV4(value: unknown): value is string {
 // 과거 날짜나 카탈로그에서 사라진 ID는 손상으로 보지 않는다.
 // ---------------------------------------------------------------------------
 
-export type ParsedStore =
-  | { kind: 'ok'; store: BookingStoreV1 }
+export type ParsedStore<S> =
+  | { kind: 'ok'; store: S }
   | { kind: 'unsupported-version' }
   | { kind: 'corrupt' };
 
-export function parseStoreValue(raw: string): ParsedStore {
+function parseEnvelope<S>(raw: string, version: 1 | 2, isValid: (value: Record<string, unknown>) => boolean): ParsedStore<S> {
   let value: unknown;
   try {
     value = JSON.parse(raw);
@@ -36,18 +40,28 @@ export function parseStoreValue(raw: string): ParsedStore {
     return { kind: 'corrupt' };
   }
   if (!isRecord(value)) return { kind: 'corrupt' };
-  if (Number.isInteger(value.schemaVersion) && value.schemaVersion !== 1) return { kind: 'unsupported-version' };
-  return isValidStore(value) ? { kind: 'ok', store: value } : { kind: 'corrupt' };
+  if (Number.isInteger(value.schemaVersion) && value.schemaVersion !== version) return { kind: 'unsupported-version' };
+  return isValid(value) ? { kind: 'ok', store: value as S } : { kind: 'corrupt' };
 }
 
-function isValidStore(value: Record<string, unknown>): value is BookingStoreV1 & Record<string, unknown> {
-  if (value.schemaVersion !== 1 || value.seedVersion !== 1) return false;
+/** v1 키(`lessonconnect:bookings:v1`) 읽기 — 마이그레이션 원본 검증 전용. */
+export function parseStoreValueV1(raw: string): ParsedStore<BookingStoreV1> {
+  return parseEnvelope<BookingStoreV1>(raw, 1, (value) => isValidStore(value, 1, isValidStoredBookingV1));
+}
+
+/** 활성 v2 키 읽기. 손상·미지원 버전을 v1로 되돌려 숨기지 않는다. */
+export function parseStoreValue(raw: string): ParsedStore<BookingStoreV2> {
+  return parseEnvelope<BookingStoreV2>(raw, 2, (value) => isValidStore(value, 2, isValidStoredBookingV2));
+}
+
+function isValidStore(value: Record<string, unknown>, version: 1 | 2, isValidBooking: (b: unknown) => b is { id: string }): boolean {
+  if (value.schemaVersion !== version || value.seedVersion !== 1) return false;
   if (!isPositiveSafeInt(value.revision)) return false;
   if (!isValidISOInstant(value.initializedAt)) return false;
   if (!Array.isArray(value.bookings)) return false;
   const ids = new Set<string>();
   for (const booking of value.bookings) {
-    if (!isValidStoredBooking(booking)) return false;
+    if (!isValidBooking(booking)) return false;
     const key = booking.id.toLowerCase();
     if (ids.has(key)) return false;
     ids.add(key);
@@ -55,7 +69,15 @@ function isValidStore(value: Record<string, unknown>): value is BookingStoreV1 &
   return true;
 }
 
-function isValidStoredBooking(value: unknown): value is LessonBooking {
+/** v2 레코드: v1 필드 + 필수 키 referenceImage(null 또는 검증된 이미지). 손상 이미지는 레코드 전체 손상. */
+function isValidStoredBookingV2(value: unknown): value is LessonBooking {
+  if (!isValidStoredBookingV1(value)) return false;
+  const record = value as unknown as Record<string, unknown>;
+  if (!Object.prototype.hasOwnProperty.call(record, 'referenceImage')) return false;
+  return record.referenceImage === null || isValidReferenceImage(record.referenceImage);
+}
+
+function isValidStoredBookingV1(value: unknown): value is LessonBookingV1 {
   if (!isRecord(value)) return false;
   if (!isUuidV4(value.id)) return false;
   if (!isNonEmptyString(value.offerId) || !isNonEmptyString(value.instructorId) || !isNonEmptyString(value.spaceId)) return false;
@@ -108,6 +130,7 @@ export interface NormalizedInput {
   date: string;
   startTime: string;
   memo: string;
+  referenceImageChange: ReferenceImageChange;
 }
 
 export type InputValidation =
@@ -145,10 +168,14 @@ export function validateBookingInput(input: unknown, catalog: BookingCatalog, no
 
   if (raw.acknowledged !== true) fieldErrors.acknowledged = FIELD_MESSAGES.acknowledged;
 
-  if (Object.keys(fieldErrors).length > 0 || !offer || !instructor || !space) return { ok: false, fieldErrors };
+  // 폼 검증을 우회한 이미지 값도 저장 전에 같은 계약으로 다시 확인한다.
+  const referenceImageChange = normalizeImageChange(raw.referenceImageChange);
+  if (!referenceImageChange) fieldErrors.referenceImageChange = FIELD_MESSAGES.referenceImageChange;
+
+  if (Object.keys(fieldErrors).length > 0 || !offer || !instructor || !space || !referenceImageChange) return { ok: false, fieldErrors };
   return {
     ok: true,
-    value: { offer, space, instructorName: instructor.name, date: raw.date as string, startTime: raw.startTime as string, memo },
+    value: { offer, space, instructorName: instructor.name, date: raw.date as string, startTime: raw.startTime as string, memo, referenceImageChange },
   };
 }
 

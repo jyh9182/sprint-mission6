@@ -1,4 +1,4 @@
-// 레슨커넥트AI 예약 데이터 타입 — design/data-contract.md v1 기준
+// 레슨커넥트AI 예약 데이터 타입 — design/data-contract.md v1 + §8 v2(참고 이미지) 기준
 
 export type BookingId = string; // crypto.randomUUID()로 생성한 UUID v4
 export type ISOInstant = string; // UTC ISO 8601, 예: 2026-11-11T09:00:00.000Z
@@ -75,11 +75,48 @@ export interface LessonBooking {
   createdAt: ISOInstant;
   updatedAt: ISOInstant;
   cancelledAt: ISOInstant | null;
+  /** v2 필수 키. 첨부가 없으면 null. 예약 삭제 시 레코드와 함께 사라진다. */
+  referenceImage: ReferenceImage | null;
 }
+
+// ---------------------------------------------------------------------------
+// 9단계 참고 이미지 — design/data-contract.md §8
+// ---------------------------------------------------------------------------
+
+export type ReferenceImageSourceMime = 'image/jpeg' | 'image/png' | 'image/webp';
+
+export interface ReferenceImage {
+  fileName: string; // 안전한 기본 이름: 경로·제어문자 제거, 1~120 code point
+  originalMimeType: ReferenceImageSourceMime; // 시그니처로 확인한 원본 형식
+  originalSizeBytes: number; // 원본 File.size, 1..2 MiB
+  mimeType: 'image/webp'; // 변환 결과 실제 MIME
+  sizeBytes: number; // 변환 Blob.size, 1..500 KiB
+  width: number; // 변환 결과 픽셀
+  height: number; // max(width, height) <= 1280
+  dataUrl: string; // data:image/webp;base64,<변환 바이트>
+}
+
+/** 폼 draft 명령. 저장 레코드에는 들어가지 않는다. */
+export type ReferenceImageChange =
+  | { kind: 'keep' }
+  | { kind: 'replace'; image: ReferenceImage }
+  | { kind: 'remove' };
+
+/** v1 레코드(마이그레이션 입력 전용). */
+export type LessonBookingV1 = Omit<LessonBooking, 'referenceImage'>;
 
 export interface BookingStoreV1 {
   schemaVersion: 1;
   revision: number; // 1부터 시작, 성공적인 변경마다 +1
+  initializedAt: ISOInstant;
+  seedVersion: 1;
+  bookings: LessonBookingV1[];
+}
+
+/** 활성 저장 envelope(`lessonconnect:bookings:v2`). */
+export interface BookingStoreV2 {
+  schemaVersion: 2;
+  revision: number;
   initializedAt: ISOInstant;
   seedVersion: 1;
   bookings: LessonBooking[];
@@ -92,6 +129,8 @@ export interface BookingInput {
   startTime: LocalTime;
   memo?: string; // 저장소가 trim, 누락은 ""
   acknowledged: true; // 확인 체크 — 저장 레코드에는 포함하지 않음
+  /** 생략·keep: 생성은 null, 수정은 기존 유지. replace: 교체. remove: 저장 성공 시 제거. */
+  referenceImageChange?: ReferenceImageChange;
 }
 
 export type BookingField = keyof BookingInput;

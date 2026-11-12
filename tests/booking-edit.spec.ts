@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 
 // 6단계 예약 수정(/bookings/edit?id=…). 실제 LocalStorage 저장소를 쓰는 화면을 개발 서버(또는 LANDING_TEST_URL)에서 검사한다.
 const base = process.env.LANDING_TEST_URL || 'http://localhost:3100';
-const KEY = 'lessonconnect:bookings:v1';
+const KEY = 'lessonconnect:bookings:v2'; // 9단계부터 활성 키(v1은 마이그레이션 원본, booking-image.spec.ts에서 검증)
 const HOUR = 3600e3;
 const DAY = 24 * HOUR;
 
@@ -32,11 +32,12 @@ function booking(f: Fixture = {}) {
     createdAt: created,
     updatedAt: created,
     cancelledAt: status === 'cancelled' ? created : null,
+    referenceImage: null,
   };
 }
 type Booking = ReturnType<typeof booking>;
 const storeOf = (bookings: Booking[], revision = 3) =>
-  JSON.stringify({ schemaVersion: 1, revision, initializedAt: new Date(Date.now() - 10 * DAY).toISOString(), seedVersion: 1, bookings });
+  JSON.stringify({ schemaVersion: 2, revision, initializedAt: new Date(Date.now() - 10 * DAY).toISOString(), seedVersion: 1, bookings });
 
 function watchErrors(page: Page) {
   const failures: string[] = [];
@@ -251,7 +252,7 @@ test('저장 실패(용량 초과·쓰기 실패): 이동 없이 편집값·체�
   await save(page).click();
   const alert = page.locator('.lc-alert--error');
   await expect(alert).toContainText('변경 내용을 저장하지 못했어요');
-  await expect(alert).toContainText('저장 공간이 부족해요. 편집 중인 내용은 유지했어요.');
+  await expect(alert).toContainText('브라우저 저장 공간이 부족해요. 입력과 기존 이미지는 유지했어요.');
   await expect(page).toHaveURL(editUrl(b.id));
   await expect(field(page, '메모 (선택)')).toHaveValue('실패해도 남는 메모');
   await expect(field(page, '레슨 공간 (필수)')).toHaveValue('space-dongtan-b');

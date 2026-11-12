@@ -1,5 +1,9 @@
+'use client';
+
+import * as React from 'react';
 import { formatGenres, formatInstrument, formatLessonDate, formatLessonTimeRange, formatSpace, instructorDisplayName } from '@/lib/bookings/format';
-import type { LessonBooking } from '@/lib/bookings/types';
+import { formatImageBytes } from '@/lib/bookings/reference-image';
+import type { LessonBooking, ReferenceImage } from '@/lib/bookings/types';
 
 /**
  * 예약 상세 정보 카드. Figma "15 Booking Detail / Card / Information"(285:1808).
@@ -51,6 +55,39 @@ export function BookingMemoCard({ memo }: { memo: string }) {
         <p className="lc-detail-memo__text lc-detail-memo__text--empty">작성한 메모가 없어요.</p>
       ) : (
         <p className="lc-detail-memo__text">{memo}</p>
+      )}
+    </section>
+  );
+}
+
+/**
+ * 참고 이미지 카드(9단계). Figma 20_Booking_Detail_With_Reference_Image(307:3300).
+ * 메모 다음·예약 관리 전에 두며 referenceImage가 있을 때만 렌더한다(없으면 빈 자리 없음).
+ * 저장된 Data URL은 `<img src>`로만 표시한다. 표시 실패는 빈 이미지로 두지 않고 안내로 바꾸되 저장값은 바꾸지 않는다.
+ */
+export function BookingReferenceImageCard({ image }: { image: ReferenceImage }) {
+  const [failedSrc, setFailedSrc] = React.useState<string | null>(null);
+  const failed = failedSrc === image.dataUrl;
+  return (
+    <section className="lc-detail-card lc-detail-image" aria-labelledby="booking-image-title">
+      <h3 id="booking-image-title" className="lc-detail-memo__title">참고 이미지</h3>
+      {failed ? (
+        <p className="lc-field__error" role="alert">이미지를 표시할 수 없어요. 저장된 예약 정보는 변경하지 않았어요.</p>
+      ) : (
+        <div className="lc-detail-image__body">
+          <img
+            className="lc-detail-image__img"
+            src={image.dataUrl}
+            alt={`예약 참고 이미지: ${image.fileName}`}
+            width={image.width}
+            height={image.height}
+            onError={() => setFailedSrc(image.dataUrl)}
+          />
+          <div className="lc-detail-image__meta">
+            <p className="lc-detail-image__name" title={image.fileName}>{image.fileName}</p>
+            <p className="lc-detail-image__size">{`변환 후 ${formatImageBytes(image.sizeBytes)}`}</p>
+          </div>
+        </div>
       )}
     </section>
   );

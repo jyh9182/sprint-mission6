@@ -7,7 +7,7 @@ import { ERROR_MESSAGES } from '../lib/bookings/messages';
 const base = process.env.LANDING_TEST_URL || 'http://localhost:3100';
 const LIST_PATH = '/bookings';
 const detailUrl = (id: string) => new URL(`/bookings/detail?id=${encodeURIComponent(id)}`, base).toString();
-const KEY = 'lessonconnect:bookings:v1';
+const KEY = 'lessonconnect:bookings:v2'; // 9단계부터 활성 키(v1은 마이그레이션 원본, booking-image.spec.ts에서 검증)
 const HOUR = 3600e3;
 const DAY = 24 * HOUR;
 const FOCUS_BLUE = 'rgb(56, 117, 199)';
@@ -48,11 +48,12 @@ function booking(f: Fixture) {
     createdAt: created,
     updatedAt: created,
     cancelledAt: status === 'cancelled' ? created : null,
+    referenceImage: null,
   };
 }
 
 const store = (bookings: ReturnType<typeof booking>[]) =>
-  JSON.stringify({ schemaVersion: 1, revision: 3, initializedAt: new Date(Date.now() - 30 * DAY).toISOString(), seedVersion: 1, bookings });
+  JSON.stringify({ schemaVersion: 2, revision: 3, initializedAt: new Date(Date.now() - 30 * DAY).toISOString(), seedVersion: 1, bookings });
 
 const upcoming = (extra: Partial<Fixture> = {}) => booking({ date: seoulDate(Date.now() + 7 * DAY), startTime: '19:00', ...extra });
 
@@ -275,10 +276,10 @@ test('필수 필드 손상·버전 불일치는 미정 표시 없이 조회 실�
   await expect(page.getByRole('alert').filter({ hasText: '예약 정보를 읽지 못했어요' })).toContainText(ERROR_MESSAGES.CORRUPT_DATA);
   await expect(page.getByText('미정')).toHaveCount(0);
 
-  const v2 = JSON.stringify({ ...JSON.parse(store([b])), schemaVersion: 2 });
-  await openDetail(page, v2, b.id);
+  const v3 = JSON.stringify({ ...JSON.parse(store([b])), schemaVersion: 3 });
+  await openDetail(page, v3, b.id);
   await expect(page.getByRole('alert').filter({ hasText: '예약 정보를 읽지 못했어요' })).toContainText(ERROR_MESSAGES.UNSUPPORTED_VERSION);
-  expect(await rawStore(page)).toBe(v2);
+  expect(await rawStore(page)).toBe(v3);
 });
 
 test('초기화 중: 정적 HTML은 로딩 상태, 빈 상세·없는 ID·목록 링크를 먼저 보여주지 않음', async ({ request }) => {

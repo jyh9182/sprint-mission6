@@ -20,6 +20,7 @@ export const FIELD_MESSAGES = {
   dateTime: '예약 가능한 미래 날짜와 시간을 선택해주세요.',
   memo: '메모는 500자까지 입력할 수 있어요.',
   acknowledged: '예약 내용과 이용 안내를 확인해주세요.',
+  referenceImageChange: '참고 이미지를 확인해주세요.',
 } as const;
 
 export const SUCCESS_MESSAGES = {

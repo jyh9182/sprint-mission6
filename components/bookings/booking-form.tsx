@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { ReferenceImageField, type ReferenceImageView } from '@/components/bookings/reference-image-field';
 import { Button, useClientReady } from '@/components/ui/button';
 import { Input, Select, Textarea, focusFirstInvalid } from '@/components/ui/field';
 import { InlineAlert } from '@/components/ui/inline-alert';
@@ -27,8 +28,9 @@ import {
   type FormSubmitAlert,
 } from '@/lib/bookings/form';
 import { instructorDisplayName } from '@/lib/bookings/format';
+import { IMAGE_ERROR_MESSAGES, prepareReferenceImage } from '@/lib/bookings/image-prepare';
 import { seoulDate } from '@/lib/bookings/time';
-import type { BookingCatalog, BookingInput, SpaceReference } from '@/lib/bookings/types';
+import type { BookingCatalog, BookingInput, ReferenceImage, ReferenceImageChange, SpaceReference } from '@/lib/bookings/types';
 import { useNow } from '@/lib/bookings/use-now';
 import { codePointLength, MEMO_MAX_CODE_POINTS } from '@/lib/bookings/validation';
 
@@ -39,6 +41,8 @@ import { codePointLength, MEMO_MAX_CODE_POINTS } from '@/lib/bookings/validation
  *   폼은 이동이 끝날 때까지 Loading을 유지한다. 실패하면 입력·체크·스크롤을 그대로 두고 오류를 표시한다.
  * - 같은 클릭·Enter가 여러 번 들어와도 저장 중에는 onSubmit을 다시 부르지 않는다.
  * - 오류는 사용자가 값을 바꾸고 떠난(blur) 필드와, 제출을 시도한 뒤의 전체 필드에만 표시한다.
+ * - 9단계 참고 이미지: 선택·교체·제거는 폼 draft(`referenceImageChange`)만 바꾼다. 저장 성공 전에는 저장된 첨부가 그대로다.
+ *   준비 중에는 저장을 막고, 실패·선택 취소는 직전 draft·미리보기를 유지한다.
  */
 export interface BookingFormProps {
   mode: 'create' | 'edit';
@@ -64,6 +68,8 @@ export interface BookingFormProps {
   notice?: React.ReactNode;
   /** 카탈로그에서 사라진 기존 상품·공간을 비활성 옵션으로 보일 때의 이름(예약 snapshot 기준). */
   unavailableLabels?: { offer?: string; space?: string };
+  /** 수정 화면의 저장된 참고 이미지(비교 기준). 생성은 null. */
+  initialImage?: ReferenceImage | null;
 }
 
 const ALL_FIELDS = new Set<BookingFormField>(BOOKING_FORM_FIELDS);
@@ -84,6 +90,7 @@ export function BookingForm({
   submitBlocked = false,
   notice,
   unavailableLabels,
+  initialImage = null,
 }: BookingFormProps) {
   const baseId = React.useId();
   const formId = `${baseId}-form`;
@@ -94,6 +101,7 @@ export function BookingForm({
     space: `${baseId}-space`,
     memo: `${baseId}-memo`,
     ack: `${baseId}-ack`,
+    image: `${baseId}-image`,
     notice: `${baseId}-notice`,
   };
   const formRef = React.useRef<HTMLFormElement>(null);
@@ -117,6 +125,15 @@ export function BookingForm({
   const [focusRequest, setFocusRequest] = React.useState(0);
   const submittingRef = React.useRef(false);
 
+  // 참고 이미지 draft. keep = 생성은 첨부 없음, 수정은 저장된 이미지 유지.
+  const [imageChange, setImageChange] = React.useState<ReferenceImageChange>({ kind: 'keep' });
+  const [imagePreparing, setImagePreparing] = React.useState(false);
+  const [imageError, setImageError] = React.useState<string | null>(null);
+  const imageTaskRef = React.useRef(0);
+  React.useEffect(() => () => {
+    imageTaskRef.current += 1; // 화면을 떠나면 진행 중인 변환 결과를 버린다
+  }, []);
+
   const nowMs = Math.max(now.getTime(), checkedAt);
   const computed = validateBookingForm(values, { catalog, nowMs, dateBadInput });
   const errors: BookingFormErrors = {};
@@ -127,7 +144,11 @@ export function BookingForm({
 
   // 생성: 처음 값과 다르면 dirty. 수정: 예약 필드·trim 메모의 의미 있는 변경만 dirty(확인 체크 제외).
   // 수정 화면의 initialValues는 비교 기준(처음 읽은 예약)이며, 호출 화면이 최신 예약을 확인하면 바뀔 수 있다.
-  const dirty = dateBadInput || (mode === 'edit' ? hasMeaningfulChange(values, initialValues) : !isSameFormValues(values, initialValues));
+  // 이미지 선택·교체·제거도 의미 있는 변경이다.
+  const dirty =
+    dateBadInput ||
+    imageChange.kind !== 'keep' ||
+    (mode === 'edit' ? hasMeaningfulChange(values, initialValues) : !isSameFormValues(values, initialValues));
   const unchangedEdit = mode === 'edit' && !dirty;
   React.useEffect(() => {
     onStateChange?.({ dirty, saving });
@@ -145,6 +166,49 @@ export function BookingForm({
   const today = clientReady ? seoulDate(now.getTime()) : undefined;
   const dependentDisabled = preparing || !selected;
   const locked = preparing || saving;
+
+  const imageView: ReferenceImageView =
+    imageChange.kind === 'replace'
+      ? { kind: 'selected', image: imageChange.image }
+      : imageChange.kind === 'remove'
+        ? initialImage ? { kind: 'remove-pending' } : { kind: 'empty' }
+        : initialImage ? { kind: 'selected', image: initialImage } : { kind: 'empty' };
+
+  async function handleImageFile(file: File) {
+    if (locked || imagePreparing) return; // 변환 중 중복 선택 차단
+    const task = ++imageTaskRef.current;
+    setImagePreparing(true);
+    setImageError(null);
+    let message: string | null = null;
+    let next: ReferenceImage | null = null;
+    try {
+      const result = await prepareReferenceImage(file);
+      if (result.ok) next = result.image;
+      else message = IMAGE_ERROR_MESSAGES[result.error];
+    } catch {
+      message = IMAGE_ERROR_MESSAGES.encode;
+    }
+    if (task !== imageTaskRef.current) return;
+    setImagePreparing(false);
+    if (next) {
+      const image = next;
+      setImageChange({ kind: 'replace', image });
+    } else {
+      setImageError(message); // 새 파일만 버리고 직전 draft·미리보기는 유지
+    }
+  }
+
+  function handleImageRemove() {
+    if (locked || imagePreparing) return;
+    setImageError(null);
+    // 수정의 저장된 이미지는 `제거 예정`(되돌리기 가능). 생성·저장 이미지 없는 수정은 첨부 없음으로 돌아간다.
+    setImageChange(initialImage ? { kind: 'remove' } : { kind: 'keep' });
+  }
+
+  function handleImageUndo() {
+    if (locked || imagePreparing) return;
+    setImageChange({ kind: 'keep' });
+  }
 
   function update(patch: Partial<BookingFormValues>, fields: BookingFormField[]) {
     if (locked) return;
@@ -180,7 +244,7 @@ export function BookingForm({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submittingRef.current || preparing || unchangedEdit || submitBlocked) return; // Enter 제출도 같은 조건으로 막는다
+    if (submittingRef.current || preparing || unchangedEdit || submitBlocked || imagePreparing) return; // Enter 제출도 같은 조건으로 막는다
     const checkNow = Date.now();
     setCheckedAt(checkNow);
     setActivated(new Set(ALL_FIELDS));
@@ -196,7 +260,7 @@ export function BookingForm({
     setSaving(true);
     let result: BookingFormSubmitResult;
     try {
-      result = await onSubmit(toBookingInput(values));
+      result = await onSubmit({ ...toBookingInput(values), referenceImageChange: imageChange });
     } catch {
       result = mapSaveError({ code: 'WRITE_FAILED', message: '' });
     }
@@ -356,6 +420,17 @@ export function BookingForm({
               onBlur={() => handleBlur('memo')}
             />
 
+            <ReferenceImageField
+              id={ids.image}
+              view={imageView}
+              preparing={imagePreparing}
+              error={imageError}
+              disabled={locked}
+              onFile={(file) => void handleImageFile(file)}
+              onRemove={handleImageRemove}
+              onUndoRemove={handleImageUndo}
+            />
+
             <div className="lc-form-check">
               <label className="lc-form-check__label" htmlFor={ids.ack}>
                 <input
@@ -391,7 +466,7 @@ export function BookingForm({
           form={formId}
           variant="appPrimary"
           className="lc-detail-wide"
-          disabled={preparing || !values.offerId || unchangedEdit || submitBlocked}
+          disabled={preparing || !values.offerId || unchangedEdit || submitBlocked || imagePreparing}
           loading={saving}
           busyLabel={busyLabel}
         >

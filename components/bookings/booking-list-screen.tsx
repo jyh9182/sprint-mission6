@@ -40,7 +40,7 @@ import { useNow } from '@/lib/bookings/use-now';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
-// 스크롤 복원: 정규화된 조건 조합별 키. 예약 데이터(lessonconnect:bookings:v1)와 분리된 sessionStorage다.
+// 스크롤 복원: 정규화된 조건 조합별 키. 예약 데이터(lessonconnect:bookings:v2)와 분리된 sessionStorage다.
 const SCROLL_KEY_PREFIX = 'lessonconnect:bookings:list-scroll';
 const scrollKey = (query: ListQuery) => `${SCROLL_KEY_PREFIX}:${serializeListQuery(query)}`;
 

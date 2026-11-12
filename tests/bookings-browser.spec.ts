@@ -7,8 +7,8 @@ import path from 'node:path';
 import ts from 'typescript';
 
 const ORIGIN = 'http://bookings.test';
-const MODULES = ['types', 'catalog', 'messages', 'time', 'validation', 'repository'];
-const KEY = 'lessonconnect:bookings:v1';
+const MODULES = ['types', 'catalog', 'messages', 'time', 'reference-image', 'validation', 'repository'];
+const KEY = 'lessonconnect:bookings:v2'; // 9단계부터 활성 키(v1은 마이그레이션 원본, booking-image.spec.ts에서 검증)
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
 function compile(name: string) {

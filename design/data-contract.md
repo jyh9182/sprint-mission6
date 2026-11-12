@@ -1,8 +1,8 @@
-# 레슨커넥트AI — 예약 데이터 계약 v1
+# 레슨커넥트AI — 예약 데이터 계약 v1 + 9단계 이미지 확장(v2)
 
 작성일: 2026-11-11 · 단계: 1/10 · 담당: Codex 설계 / Claude 구현
 
-이 문서는 구현할 계약이다. 앱 구현·런타임 검증 완료를 의미하지 않는다. 현재 접근 가능한 폴더에는 앱 소스와 IDE의 브리프가 없으므로 실제 프로젝트와의 정합성 확인은 Claude 착수 조건이다. 조사 근거는 [1단계 인계](steps/01-foundation.md)를 참조한다.
+이 문서의 §1~7은 1단계에 확정한 v1 계약과 그 당시의 조사 기록이다. **9단계 이미지 첨부부터는 §8의 v2 확장이 저장 키·스키마·첨부 관련 규칙에 우선한다.** 앱 구현·런타임 검증 완료를 의미하지 않는다. 9단계에는 실제 앱 소스 경로를 확인했으며 [9단계 인계](steps/09-booking-image.md)에 반영했다.
 
 ## 1. 범위와 결정
 
@@ -13,7 +13,7 @@
 - 예약 취소는 상태 변경으로 기록을 유지한다. 예약 삭제는 해당 레코드와 그에 종속된 첨부 정보를 제거한다. 삭제 복구 기능은 없다.
 - 기준 데이터(강사·상품·공간)는 코드의 읽기 전용 데모 카탈로그, 사용자 예약은 LocalStorage에 분리한다.
 - 음악 취향 선택값과 AI 매칭률은 예약의 필수 필드가 아니다. 매칭률을 실제 계산 결과로 새로 생성하지 않는다.
-- 파일 첨부는 9단계에서 계약 확장 후 구현한다. v1에 임의 첨부 필드를 추가하거나 파일 업로드를 선행 구현하지 않는다.
+- v1에는 첨부가 없었다. 9단계의 참고 이미지 1장 계약은 §8의 v2 스키마와 마이그레이션을 따른다.
 
 ## 2. 타입 계약
 
@@ -254,3 +254,78 @@ interface BookingRepository {
 - 브라우저 데이터 삭제·비공개 모드 종료·저장 정책 등에 따라 데이터가 사라질 수 있다. 암호화된 서버 보관이나 복구를 제공하지 않는다.
 - 실제 개인정보·결제정보는 수집하지 않는다. 강사 검증·가격·가용 시간은 화면 예시임을 유지한다.
 - 원래 과제의 Supabase DB/Storage/RLS 및 서버 데이터 처리 요구사항은 사용자 지시에 따라 LocalStorage 구조·클라이언트 CRUD로 대체했다. 원래 서버 요건까지 충족했다고 제출 문서에 쓰지 않는다.
+
+## 8. 9단계 참고 이미지 확장 — v2 계약
+
+9단계부터 예약당 **선택적 참고 이미지 1장**만 저장한다. JPEG, PNG, WebP만 허용하며 PDF·음성·동영상·SVG·원격 URL은 받지 않는다. 원본 파일은 최대 `2 * 1024 * 1024` bytes(2 MiB), 변환 이미지의 긴 변은 최대 1280px, 변환된 바이너리는 최대 `500 * 1024` bytes(500 KiB)다. Data URL 문자열의 문자 수는 이 바이너리 크기보다 크므로 용량 검사에 문자열 길이를 대신 사용하지 않는다. 이미지가 없는 예약은 `referenceImage: null`로 표시한다.
+
+### v2 타입과 이미지 필드
+
+아래는 §2의 기존 필드에 대한 **확장**이며 기존 예약 ID·상태·snapshot·시각·목록 규칙은 그대로다. v1 타입과 저장 키는 마이그레이션 입력으로만 남긴다.
+
+```ts
+type ReferenceImageSourceMime = "image/jpeg" | "image/png" | "image/webp";
+
+interface ReferenceImage {
+  fileName: string; // 선택한 원본 파일의 안전한 기본 이름; 경로/제어문자 제거, 1~120 code point
+  originalMimeType: ReferenceImageSourceMime; // 검증한 원본의 실제 형식
+  originalSizeBytes: number; // 원본 File.size, 1..2*1024*1024
+  mimeType: "image/webp"; // 캔버스 변환 결과의 실제 MIME
+  sizeBytes: number; // 변환 Blob.size, 1..500*1024
+  width: number; // 변환 결과 실제 픽셀, 1 이상
+  height: number; // 변환 결과 실제 픽셀, 1 이상; max(width,height) <= 1280
+  dataUrl: string; // data:image/webp;base64,<실제 변환 바이트>
+}
+
+type LessonBookingV2 = LessonBooking & {
+  referenceImage: ReferenceImage | null; // v2에서 필수 키, 첨부 없으면 null
+};
+
+interface BookingStoreV2 {
+  schemaVersion: 2;
+  revision: number;
+  initializedAt: ISOInstant;
+  seedVersion: 1;
+  bookings: LessonBookingV2[];
+}
+
+type ReferenceImageChange =
+  | { kind: "keep" }
+  | { kind: "replace"; image: ReferenceImage }
+  | { kind: "remove" };
+
+type BookingInputV2 = BookingInput & {
+  referenceImageChange?: ReferenceImageChange;
+};
+// 생략 또는 keep: 생성에는 null, 수정에는 기존 referenceImage 유지.
+// replace: 새 검증 이미지로 교체. remove: 수정의 기존 이미지를 저장 성공 시 제거.
+// StoreResult의 fieldErrors는 "referenceImageChange"를 허용하도록 BookingField를 확장한다.
+```
+
+원본 파일 바이트와 `objectURL`은 영속 저장하지 않는다. `fileName`은 표시용 메타데이터이며 확장자만 신뢰하지 않는다. 클라이언트가 선택한 파일의 MIME과 파일 시그니처가 JPEG/PNG/WebP 중 같은 형식인지 검사하고, 이미지 디코딩에도 성공해야 한다. 빈 MIME은 시그니처에서 식별 가능할 때만 허용한다. 원본 MIME과 시그니처가 충돌하면 형식 오류다. `dataUrl`은 변환된 WebP 바이트에서 생성한다. 읽기 검증은 prefix·base64 디코딩·실제 바이트 크기·WebP 시그니처·메타데이터의 크기/픽셀 조건을 확인한다. 심하게 긴 Data URL은 디코딩 전 거부한다. 화면에서 임의 HTML로 삽입하지 않고 `<img src>`로만 표시한다. 손상된 이미지 필드는 전체 레코드 손상으로 `CORRUPT_DATA` 처리하며 자동으로 첨부만 버리지 않는다.
+
+### 선택·축소·변환 규칙
+
+1. `<input type="file" accept="image/jpeg,image/png,image/webp">`는 선택 편의 기능이다. 선택 후 실제 MIME·시그니처·원본 바이트 수를 검증한다. 다중 선택은 허용하지 않는다.
+2. 이미지 디코딩 실패·0×0 크기·캔버스/인코딩 실패를 구분한다. EXIF 회전은 브라우저가 해석한 올바른 방향을 미리보기·변환 결과에 반영한다. 가로세로 비율은 유지하고 긴 변이 1280px보다 크면 1280px로 축소하며 작은 이미지를 확대하지 않는다.
+3. Canvas에서 WebP Blob으로 변환한다. 품질을 단계적으로 낮추고 필요한 경우 픽셀 크기를 추가 축소해 500 KiB 이하를 시도한다. **조건을 만족한 최종 Blob만** Data URL로 변환해 `ReferenceImage`를 만든다. 환경에서 WebP 인코딩이 지원되지 않거나 제한까지 줄여도 500 KiB 이하가 안 되면 변환 실패로 안내하며 초과 이미지를 저장하지 않는다. 무한 반복·0px 축소는 금지한다.
+4. 변환 중에는 해당 이미지 선택·교체의 중복 실행을 막고 `이미지 준비 중…`을 표시한다. 완료 전에는 저장을 막는다. 성공 시 미리보기는 **변환 결과**를 사용한다. 실패 시 새 파일만 버리고 이전 첨부·기존 폼값·기존 미리보기를 유지한다. 생성에서 실패했으며 이전 이미지가 없으면 선택 전 상태를 유지한다.
+5. 선택·교체·제거는 저장 전의 **폼 draft**만 바꾼다. 기존 수정 화면에서 `제거`를 누르면 `제거 예정`과 `되돌리기`를 보여주고 저장 성공 전까지 저장된 기존 첨부는 그대로다. `교체` 후 다시 제거하면 최종 draft는 `remove`; 새 파일 선택을 취소하면 직전 draft를 유지한다. 생성에서 선택된 이미지를 제거하면 첨부 없음으로 돌아간다.
+
+파일 오류 문구는 `JPEG, PNG, WebP 이미지만 첨부할 수 있어요.`, `원본 이미지는 2MB 이하만 첨부할 수 있어요.`, `이미지를 열 수 없어요. 다른 파일을 선택해주세요.`, `이미지를 준비하지 못했어요. 다른 파일로 다시 시도해주세요.`를 사용한다. 오류는 이미지 필드 아래에 `role=alert`로 표시하고 파일을 다시 고르면 해제한다. 형식·크기·디코딩·변환 오류를 예약 저장소의 `QUOTA_EXCEEDED`와 혼동하지 않는다.
+
+### 저장·수정·취소·삭제
+
+- 저장소는 `ReferenceImage`의 메타데이터와 Data URL을 다시 검증한다. 폼 검증을 우회한 값은 `VALIDATION_ERROR`와 `fieldErrors.referenceImageChange`로 거절한다. 성공적인 `setItem` 한 번 뒤에만 이미지와 예약을 함께 발행한다.
+- 생성 시 `referenceImageChange` 생략/keep은 null, replace는 새 이미지다. 수정 시 생략/keep은 기존 이미지를 그대로 유지한다. replace/remove도 다른 예약 필드와 동일한 한 번의 v2 전체값 쓰기로 반영한다. 이미지 변경만 있어도 의미 있는 수정이며, 기존과 동일한 이미지·필드면 쓰지 않는다.
+- 편집에서 `수정 취소`, 뒤로 가기 이탈 확인의 `나가기`, 파일 선택 취소, 저장 실패는 **기존 저장 첨부를 변경하지 않는다**. 파일 교체·제거는 미저장 변경으로 판정해 기존 이탈 확인을 적용한다. 이탈 확인에서 `계속 작성`을 택하면 draft와 미리보기를 유지한다.
+- `QUOTA_EXCEEDED`/`STORAGE_UNAVAILABLE`/`WRITE_FAILED`에서는 기존 v2 값·revision·화면의 저장된 이미지를 보존하고, 폼의 모든 값과 준비된 새 이미지·제거 예정 상태를 유지해 재시도할 수 있게 한다. 성공 토스트·상세 이동을 하지 않는다. 용량 부족 안내는 `브라우저 저장 공간이 부족해요. 입력과 기존 이미지는 유지했어요.`다. 저장 공간이 부족한 경우 이미지 제거 후 저장을 시도할 수 있으나 자동으로 기존 첨부를 삭제하지 않는다.
+- 예약 **취소**는 상태만 변경하고 이미지를 유지한다. 예약 **삭제**는 해당 예약 레코드와 내부 Data URL을 함께 제거한다. 별도 이미지 키가 없으므로 고아 첨부가 남지 않는다. 삭제 실패 시 원본 예약과 이미지는 유지된다.
+- 상세에는 `referenceImage !== null`인 경우에만 `참고 이미지` 카드를 메모 다음에 표시하고 실제 저장된 이미지를 보여준다. 없으면 카드 전체를 숨긴다. `fileName`은 보조 텍스트, 이미지의 대체 텍스트는 `예약 참고 이미지: {fileName}`이다. 이미지 디코드/표시 실패는 빈 이미지를 성공처럼 보이지 않게 오류 안내로 전환하되 저장 데이터를 자동 변경하지 않는다.
+
+### v1 → v2 마이그레이션 및 저장 키
+
+- v1 키 `lessonconnect:bookings:v1`은 **기존 데이터의 읽기 전용 마이그레이션 원본**이다. 새 활성 키는 `lessonconnect:bookings:v2`이며 예약과 이미지 1장을 같은 envelope에 저장한다. `schemaVersion: 2`로 새로 저장하고 새 시드 예약의 `referenceImage`는 null이다. LocalStorage 외 서버·Supabase Storage는 사용하지 않는다.
+- `initialize()`는 먼저 v2 키를 읽는다. 값이 있으면 v2를 엄격 검증해 사용하며, 손상·미지원 버전이면 v1로 조용히 되돌아가지 않는다. v2가 없고 v1이 있으면 v1을 **기존 v1 검증기로** 확인하고 각 예약에 `referenceImage:null`만 추가해 v2 전체값을 한 번의 `setItem(v2Key, ...)`으로 쓴다. 예약 ID·상태·메모·snapshot·`createdAt`·`updatedAt`·`revision`·`initializedAt`·`seedVersion`은 유지한다. v1이 빈 배열이면 v2도 빈 배열이며 재시드하지 않는다.
+- v1도 v2도 없을 때만 v2를 최초 시드한다. v1 손상/미지원 버전이면 자동 시드·복구하지 않는다. v2 마이그레이션 쓰기에 실패하면 v1은 그대로 있고 준비 완료로 표시하지 않는다. 재시도 시 같은 원본을 다시 검증·변환한다. 성공 후 v1 키는 자동 삭제하지 않아 사용자가 원본을 잃지 않는다. 이후에는 v2만 읽고 쓴다. 구버전 탭과 동시 사용의 무손실 동기화는 보장하지 않으므로 마이그레이션 후 열린 기존 탭은 새로고침하도록 안내한다.
+- v2 런타임에서 v2 키가 갑자기 사라지면 기존 §5처럼 `CONFLICT`다. 다른 탭 `storage` 이벤트는 v2 키의 변경을 기준으로 재조회한다. v1 키의 변경을 v2에 자동 병합하지 않는다. 모든 이미지·예약은 같은 브라우저 프로필·origin에만 있고 기기 간 공유되지 않는다.
