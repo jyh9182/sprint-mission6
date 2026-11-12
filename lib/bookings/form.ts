@@ -4,7 +4,7 @@
 
 import { formatGenres } from './format';
 import { isValidLocalDate, isValidLocalTime, endsSameSeoulDay, seoulDate, seoulStartMs } from './time';
-import type { BookingCatalog, BookingInput, LessonOfferReference, SpaceReference, StoreError } from './types';
+import type { BookingCatalog, BookingInput, LessonBooking, LessonOfferReference, SpaceReference, StoreError } from './types';
 import { codePointLength, MEMO_MAX_CODE_POINTS } from './validation';
 
 /** 폼이 들고 있는 편집 값. 확인 체크는 제출 시에만 `acknowledged: true`로 전달하고 저장하지 않는다. */
@@ -157,6 +157,42 @@ export function isSameFormValues(a: BookingFormValues, b: BookingFormValues): bo
 }
 
 // ---------------------------------------------------------------------------
+// 수정(6단계) — design/steps/06-booking-edit.md
+// ---------------------------------------------------------------------------
+
+/** 저장된 예약값으로 수정 폼을 채운다. 확인 체크는 저장 필드가 아니므로 매번 false로 시작한다. */
+export function bookingToFormValues(booking: LessonBooking): BookingFormValues {
+  return {
+    offerId: booking.offerId,
+    date: booking.date,
+    startTime: booking.startTime,
+    spaceId: booking.spaceId,
+    memo: booking.memo,
+    acknowledged: false,
+  };
+}
+
+/**
+ * 의미 있는 변경 여부. 예약 필드(offerId·date·startTime·spaceId)와 trim한 메모만 비교한다.
+ * 확인 체크·메모 앞뒤 공백은 변경이 아니며, 바꿨다가 되돌리면 다시 변경 없음이다.
+ */
+export function hasMeaningfulChange(values: BookingFormValues, baseline: BookingFormValues): boolean {
+  return (
+    values.offerId !== baseline.offerId ||
+    values.date !== baseline.date ||
+    values.startTime !== baseline.startTime ||
+    values.spaceId !== baseline.spaceId ||
+    values.memo.trim() !== baseline.memo.trim()
+  );
+}
+
+export const EDIT_MESSAGES = {
+  unchanged: '변경한 내용이 없어요. 내용을 바꾸면 저장할 수 있어요.',
+  noLongerEditable: '이 예약은 이제 수정할 수 없어요.',
+  changedElsewhere: '다른 화면에서 이 예약이 변경됐어요. 새 내용을 확인해주세요.',
+} as const;
+
+// ---------------------------------------------------------------------------
 // 저장 실패 → 폼 표시
 // ---------------------------------------------------------------------------
 
@@ -170,8 +206,11 @@ export type BookingFormSubmitResult =
   | { ok: true }
   | { ok: false; alert?: FormSubmitAlert; fieldErrors?: BookingFormErrors; revalidate?: boolean };
 
-const SAVE_FAILED_TITLE = '예약을 저장하지 못했어요';
-const KEEP_INPUT = '입력 내용은 유지했어요.';
+/** 생성/수정 화면의 실패 문구 차이(5단계 Save Error · 6단계 Edit Save Error). */
+const SAVE_COPY = {
+  create: { title: '예약을 저장하지 못했어요', keep: '입력 내용은 유지했어요.' },
+  edit: { title: '변경 내용을 저장하지 못했어요', keep: '편집 중인 내용은 유지했어요.' },
+} as const;
 
 /**
  * 저장소 오류를 폼 표시로 바꾼다. 어떤 실패도 성공 화면으로 넘기지 않는다.
@@ -179,7 +218,11 @@ const KEEP_INPUT = '입력 내용은 유지했어요.';
  * - VALIDATION_ERROR: 저장 시점의 현재 시각·카탈로그로 다시 검증하도록 표시(경계 시각 등)
  * - CONFLICT: 다른 탭·화면 변경. 호출 화면이 최신 revision을 다시 읽고, 사용자가 확인 후 재시도한다.
  */
-export function mapSaveError(error: StoreError): Exclude<BookingFormSubmitResult, { ok: true }> {
+export function mapSaveError(
+  error: StoreError,
+  mode: 'create' | 'edit' = 'create',
+): Exclude<BookingFormSubmitResult, { ok: true }> {
+  const { title: SAVE_FAILED_TITLE, keep: KEEP_INPUT } = SAVE_COPY[mode];
   switch (error.code) {
     case 'LOCAL_TIME_CONFLICT':
       return { ok: false, fieldErrors: { startTime: error.message } };

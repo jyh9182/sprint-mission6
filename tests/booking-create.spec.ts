@@ -133,7 +133,8 @@ test('목록 CTA → 생성 → 상세 → 목록: 클라이언트 이동으로 
   await submit(page).click();
   await expect(page).toHaveURL(DETAIL_RE);
   await expect(page.getByText('예약을 저장했어요')).toBeVisible();
-  await page.locator('.lc-detail-footer').getByRole('link', { name: '예약 목록으로' }).click();
+  // 6단계부터 예정 예약 상세 Footer는 `예약 수정`이므로 Header 뒤로가기로 목록에 간다.
+  await page.getByRole('button', { name: '예약 목록으로 돌아가기' }).click();
   await expect(page.locator('.lc-booking-card')).toHaveCount(1);
 });
 

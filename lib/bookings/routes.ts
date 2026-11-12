@@ -15,3 +15,13 @@ export const BOOKING_ID_PARAM = 'id';
 export function bookingDetailHref(id: BookingId): string {
   return `${BOOKING_DETAIL_PATH}?${BOOKING_ID_PARAM}=${encodeURIComponent(id)}`;
 }
+
+/**
+ * 예약 수정 정적 페이지. 논리 화면 `/bookings/[id]/edit` → `/bookings/edit?id={UUID}`(design/steps/06-booking-edit.md).
+ * ID 쿼리 이름은 상세와 같은 BOOKING_ID_PARAM을 쓴다.
+ */
+export const BOOKING_EDIT_PATH = '/bookings/edit';
+
+export function bookingEditHref(id: BookingId): string {
+  return `${BOOKING_EDIT_PATH}?${BOOKING_ID_PARAM}=${encodeURIComponent(id)}`;
+}

@@ -14,7 +14,9 @@
 - 4단계 Claude: **상세 조회·화면 상태 구현·검증 완료 (2026-11-12)**. `/bookings/detail?id={UUID}`. 예약 수정(6단계)·취소/기록 삭제(7단계)는 목적지·확인 흐름이 없어 **버튼을 만들지 않고 "준비 중" 안내만** 표시한다. 아래 "Claude 4단계 구현 기록" 참조.
 - 5단계 Codex: **예약 생성 폼·핵심 오류·저장·이탈·성공 상세 8개 Figma 프레임과 폼 마스터 제작, 시각 검수·인계 문서 완료**.
 - 5단계 Claude: **예약 생성 구현·검증 완료 (2026-11-12)**. `/bookings/new` 단일 스크롤 폼, 공통 `BookingForm`(6단계 수정 재사용), 저장 성공 후 상세 이동·성공 알림 1회, 저장 실패 시 입력 유지, 이탈 확인. 아래 "Claude 5단계 구현 기록" 참조.
-- Figma: 기존 홈·음악 취향·예약 제품 화면과 3·4단계 화면 유지. 5단계 화면만 추가.
+- 6단계 Codex: **예약 수정의 변경 없음·편집·저장 실패·이탈·없는 ID·수정 불가·성공 상세 7개 Figma 프레임 제작, 시각 검수·인계 문서 완료**. 
+- 6단계 Claude: **예약 수정 구현·검증 완료 (2026-11-12)**. `/bookings/edit?id={UUID}`, 상세 예정 예약 Footer Primary `예약 수정` 연결, 공통 `BookingForm(mode='edit')` 재사용, 의미 있는 변경만 저장 가능, CONFLICT 시 대상 재조회. 아래 "Claude 6단계 구현 기록" 참조.
+- Figma: 기존 홈·음악 취향·예약 제품 화면과 3~5단계 화면 유지. 6단계 핵심 차이만 추가.
 - 배포: 수행하지 않음.
 
 ## 작업 경로와 인계 주의
@@ -23,7 +25,7 @@
 
 현재 디자인 작업 폴더에는 AGENTS.md, CLAUDE.md, design/README.md, design/brief.md와 앱 소스가 없다. 실제 앱 프로젝트는 `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`로 확인했으며 4단계에서 `AGENTS.md`, `CLAUDE.md`, `next.config.ts`, `lib/bookings/routes.ts`를 읽었다. IDE 탭 자체의 내용은 읽지 못했다. 디자인 폴더와 앱 프로젝트의 파일은 자동 동기화되지 않는다.
 
-Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/05-booking-create.md`까지, 이 진행 기록을 실제 앱 프로젝트에 전달하고 그 프로젝트의 작업 규칙·브리프와 대조해야 한다. 기존 같은 이름의 문서가 있다면 덮어쓰지 말고 내용을 비교·병합한다. 현재 폴더에서 새 Next.js 앱을 만들지 않는다.
+Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/06-booking-edit.md`까지, 이 진행 기록을 실제 앱 프로젝트에 전달하고 그 프로젝트의 작업 규칙·브리프와 대조해야 한다. 기존 같은 이름의 문서가 있다면 덮어쓰지 말고 내용을 비교·병합한다. 현재 폴더에서 새 Next.js 앱을 만들지 않는다.
 
 ## 산출물
 
@@ -33,6 +35,7 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/05-b
 - [3단계 예약 목록 인계](steps/03-booking-list.md): 5개 Figma 프레임, 카드 데이터·상태, CTA·상세 이동, 스크롤·오류·빈 목록, Claude 완료 조건.
 - [4단계 예약 상세 인계](steps/04-booking-detail.md): 7개 Figma 프레임, snapshot·메모·액션 조건, 정적 export URL 매핑, Claude 완료 조건.
 - [5단계 예약 생성 인계](steps/05-booking-create.md): 단일 스크롤 폼·필드 연동·검증·저장·이탈·성공 이동, 8개 Figma 프레임, Claude 완료 조건.
+- [6단계 예약 수정 인계](steps/06-booking-edit.md): 기존값·변경 여부·상태 제한·미저장 이탈·오류·수정 완료 상세, 7개 Figma 프레임, Claude 완료 조건.
 - 이 진행 기록: Codex/Claude 단계별 상태와 재개 지점.
 
 ## 최신 Figma 근거
@@ -41,13 +44,14 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/05-b
 
 - 홈 `23:67`, 음악 취향 `42:136`: 390×844, 스크린샷 검수.
 - 기존 예약 흐름: 일정 `163:833` → 공간 `178:1041` → 확인 `186:1158` → 완료 `199:1279`.
-- 기존 구조에서 12개 제품 화면을 확인했고, 3단계 목록 5개·4단계 상세 7개·5단계 생성 8개 화면을 추가했다.
+- 기존 구조에서 12개 제품 화면을 확인했고, 3단계 목록 5개·4단계 상세 7개·5단계 생성 8개·6단계 수정 7개 화면을 추가했다.
 - 과거 기록의 `7:2`, `16:94`, `7:5`는 조회되지 않음. `work/design-system-state-lessonconnect.json`을 최신 마스터로 사용하지 말 것.
 - 현재 스타일은 검정 CTA·밝은 중립색·사진형 카드·Noto Sans KR. 기존 색상·스타일을 재설계하지 않음.
 - 2단계 Figma 마스터 영역 `273:1454`, 상태 인스턴스 검수 보드 `279:1459`. 기존 Primary `188:1164`, Secondary 기본 `47:188`, 안내 기본 `188:1182`를 유지했다.
 - 3단계 Card / LessonBooking `282:1584`, 기본 `283:1588`, 0건 `283:1659`, 초기화 `283:1716`, 읽기 실패 `283:1771`, 긴 목록 `283:1833`.
 - 4단계 Information Card `285:1808`, Memo Card `285:1828`; 정상 `286:1807`, 메모 없음 `286:1869`, 긴 메모 `286:1931`, 취소됨 `286:1993`, 없는 ID `286:2055`, 초기화 `286:2090`, 조회 실패 `286:2123`.
 - 5단계 Form / Fields `291:2603`; Initial `291:1950`, Ready `291:2020`, Ready Scrolled `291:2114`, Errors `291:2208`, Saving `291:2303`, Save Error `291:2399`, Leave Confirm `291:2500`, Success Detail `291:2647`.
+- 6단계 기존값/변경 없음 `295:2272`, 편집 `295:2355`, 저장 실패 `295:2433`, 이탈 확인 `295:2518`, 없는 ID `295:2605`, 수정 불가 `295:2637`, 성공 상세 `295:2670`.
 
 ## 확정 설계 결정
 
@@ -60,6 +64,7 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/05-b
 7. 손상/버전 불일치/저장 실패 시 원본 유지. 성공한 쓰기 이후에만 성공 UI.
 8. 실제 앱 규칙·기존 카탈로그 ID와의 정합성은 Claude 착수 시 확인.
 9. 정적 export를 유지한다. ID별 상세의 논리 범위는 `/bookings/[id]`지만 실제 URL은 `/bookings/detail?id={UUID}`로 매핑하고 `bookingDetailHref` 한 곳에서 생성한다.
+10. 6단계 수정의 논리 범위는 `/bookings/[id]/edit`, 실제 URL은 `/bookings/edit?id={UUID}`다. 시작 전 scheduled만 수정 가능하며 변경 없음은 저장하지 않는다.
 
 ## 10단계 상태
 
@@ -70,7 +75,7 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/05-b
 | 3 | 예약 목록 | Figma·문서 완료 | 구현·검증 완료 (상세·새 예약 목적지는 4·5단계) |
 | 4 | 예약 상세 | Figma·문서 완료 | 구현·검증 완료 (수정 진입은 6단계, 취소·삭제 실행은 7단계에서 연결) |
 | 5 | 예약 생성 폼 | Figma·문서 완료 | 구현·검증 완료 (수정 화면 연결은 6단계) |
-| 6 | 예약 수정 | 미착수 | 미착수 |
+| 6 | 예약 수정 | Figma·문서 완료 | 구현·검증 완료 (취소·삭제 실행은 7단계) |
 | 7 | 취소·삭제 | 미착수 | 미착수 |
 | 8 | 검색·필터·정렬·페이지 | 미착수 | 미착수 |
 | 9 | 이미지 첨부·계약 확장 | 미착수 | 미착수 |
@@ -88,15 +93,16 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/05-b
 - 긴 목록 viewport `VERTICAL` 스크롤·클립 350×458, 내부 콘텐츠 756px, 하단 내비게이션 y=767 확인. 홈 `23:67`의 내비게이션 마스터·선택 색상 유지 확인.
 - 4단계 7개 390×844 화면 스크린샷 검수. 긴 메모 viewport `VERTICAL` 스크롤·클립 350×636, 내부 콘텐츠 871px, Footer y=744 고정 확인. 모든 화면 Noto Sans KR·편집 가능 노드, 원본 홈·목록 유지.
 - 5단계 8개 390×844 화면과 Form / Fields 마스터 제작. Initial·Ready 상하·Errors·Saving·Save Error·Leave Confirm·Success Detail 스크린샷 검수. 잘린 Auto Layout 높이를 1040px로 수정했고, 오류값·이탈 버튼 문구·성공 메모 예시를 바로잡았다. 본문 viewport 350×636·Footer y=744 고정. 홈·기존 화면은 수정하지 않았다.
+- 6단계 7개 390×844 핵심 차이 화면 스크린샷 검수. 5단계 폼·2단계 필드/버튼/Dialog/Alert와 4단계 상세 상태를 재사용했다. 변경 없음 CTA 비활성, 편집값·확인 체크·수정 취소, 저장 실패, 이탈 Dialog, 없는 ID·수정 불가, 성공 상세가 겹침 없이 보인다. 원본 화면은 수정하지 않았다.
 - 런타임 F01~F17: Claude가 실행, 전부 통과 (1단계 기록).
 - 2단계 공통 UI·3단계 목록 런타임 검사: Claude가 실행, 전부 통과 (각 단계 기록).
 - 4단계 상세·5단계 생성 런타임 검사: Claude가 실행, 전체 78/78 통과 (5단계 기록).
 
 ## 다음 작업 / 재개 지점
 
-Claude 1~5단계 완료. 실제 앱 프로젝트 경로는 `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`이다. **다음은 Codex 6단계 예약 수정 화면 설계**다. Claude는 6단계 구현을 시작하지 않았다.
+Claude 1~6단계 완료. 실제 앱 프로젝트 경로는 `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`이다. **다음은 Codex 7단계 취소·삭제 설계**다. 6단계 이후 상세 예정 예약의 `예약 관리` 안내는 `예약 취소는 준비 중이에요`로 바뀌었고 Footer는 Primary `예약 수정`이다(아래 "Claude 6단계 구현 기록").
 
-**6단계 수정에서 재사용할 것(5단계 구현)**: `components/bookings/booking-form.tsx`의 `BookingForm`은 `mode: 'edit'`, `initialValues`(기존 예약에서 만든 `BookingFormValues`, 확인 체크는 `false`로 시작해 매번 새로 확인), `onSubmit`(→ `updateBooking`), `submitLabel`을 받는다. 검증·문구·상품 변경 시 종속 값 정리는 `lib/bookings/form.ts`, 저장 실패 표시는 `mapSaveError`, 성공 알림은 `setBookingFlash(id, 'update')`(상세에 `예약을 수정했어요` 1회), 이탈 확인은 `useLeaveGuard` + `ConfirmDialog`를 그대로 쓴다. 카탈로그에서 사라진 기존 상품·공간·시각은 선택 목록에 비활성 옵션으로 보이고 저장 전 재선택 오류가 난다. 수정 화면의 정적 URL(예: `/bookings/edit?id=`)과 상세 Footer `예약 수정` 연결은 6단계에서 정한다.
+**6단계 수정에서 재사용할 것(5단계 구현)**: `components/bookings/booking-form.tsx`의 `BookingForm`은 `mode: 'edit'`, `initialValues`(기존 예약에서 만든 `BookingFormValues`, 확인 체크는 `false`로 시작해 매번 새로 확인), `onSubmit`(→ `updateBooking`), `submitLabel`을 받는다. 검증·문구·상품 변경 시 종속 값 정리는 `lib/bookings/form.ts`, 저장 실패 표시는 `mapSaveError`, 성공 알림은 `setBookingFlash(id, 'update')`(상세에 `예약을 수정했어요` 1회), 이탈 확인은 `useLeaveGuard` + `ConfirmDialog`를 그대로 쓴다. 카탈로그에서 사라진 기존 상품·공간·시각은 선택 목록에 비활성 옵션으로 보이고 저장 전 재선택 오류가 난다. 수정 URL `/bookings/edit?id={UUID}`와 상세 Footer `예약 수정`을 6단계 구현에서 연결한다. 현재 `BookingForm`의 dirty는 확인 체크까지 포함하므로, 6단계에서는 예약 필드의 정규화된 의미 있는 변경을 별도 계산해야 한다.
 
 **6·7단계로 넘긴 상세 액션**: 상세 화면의 허용 조건은 `lib/bookings/detail-actions.ts`의 `getDetailActions(phase)`에 구현돼 있다(예정=수정·취소, 진행 중=없음, 종료·취소됨=삭제). 현재는 그 자리에 정보 알림 `예약 수정·취소는 준비 중이에요` / `예약 기록 삭제는 준비 중이에요`만 있고, Footer는 모든 조회 상태에서 Secondary `예약 목록으로`다. 6단계에서 수정 화면 정적 URL을 정하면 예정 상태 Footer를 Primary `예약 수정`으로 바꾸고, 7단계에서 확인 Dialog(2단계 `ConfirmDialog`)를 연결하면서 안내를 `예약 취소`·`예약 기록 삭제` 버튼과 Figma 안내 문구로 교체한다. 확인 없이 `cancelBooking`/`deleteBooking`을 호출하지 않는다.
 
@@ -506,3 +512,82 @@ progress 확인: 이번 단계 시작 시 Claude 1~4단계 기록 섹션은 삭�
 - production `out/` 정적 파일을 별도 서버로 띄운 브라우저 검사는 하지 않았다(개발 서버 검사 + build 성공 확인). 배포하지 않았다.
 
 Claude 5단계 완료 여부: **완료**. 6단계는 시작하지 않았다.
+
+## Claude 6단계 구현 기록 (2026-11-12)
+
+실제 앱 프로젝트 절대 경로: `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`
+
+읽은 근거: CLAUDE.md, design/steps/06-booking-edit.md, 이 진행 기록, 5단계 `BookingForm`·`lib/bookings/form.ts`·`useLeaveGuard`·`ConfirmDialog`·`flash`, 4단계 상세 조회 훅, 저장소 `updateBooking`. Figma MCP로 Edit Unchanged `295:2272`·Edit Changed `295:2355`·Edit Save Error `295:2433`·Edit Not Found `295:2605`·Edit Unavailable `295:2637`·Edit Success Detail `295:2670` 스크린샷을 직접 확인했다. Leave Confirm `295:2518`은 명세 문구와 5단계 Dialog로 대조했다.
+
+progress 확인: 이번 단계 시작 시 Claude 1~5단계 기록 섹션은 삭제되지 않았다(Codex가 6단계 항목만 추가). 복원 작업은 필요 없었다.
+
+### 변경 파일
+
+| 파일 | 내용 |
+|---|---|
+| `app/bookings/edit/page.tsx` (신규) | 정적 페이지 `/bookings/edit`. `Suspense` 아래에서 `useSearchParams()`로 `id`를 읽는다 |
+| `components/bookings/booking-edit-screen.tsx` (신규) | 수정 화면. 마운트 후 `initialize()` → `getBooking(id)`(4단계 `loadBookingDetail` 재사용) → 시작 전 예정이면 폼, 아니면 수정 불가. 없는 ID·수정 불가·조회 실패·불러오는 중 상태. `updateBooking(id, input, revision)` 1회 호출, 성공 시 `setBookingFlash(id,'update')` → 같은 ID 상세. CONFLICT·INVALID_TRANSITION·NOT_FOUND 처리, 이탈 Dialog |
+| `components/bookings/booking-form.tsx` | **최소 확장**(복제 없음): edit 모드 dirty를 의미 있는 변경으로 계산, 변경 없음 문구·CTA 비활성(Enter 제출도 차단), Secondary `수정 취소`(`onCancel`), 호출 화면의 저장 차단(`submitBlocked`)·상단 안내(`notice`), 카탈로그에서 사라진 기존 상품·공간의 비활성 옵션 이름(`unavailableLabels`, snapshot 기준), 수정 진입 시 사용할 수 없는 기존 상품·시간·공간은 처음부터 필드 오류. 생성 모드 동작은 그대로 |
+| `lib/bookings/form.ts` | `bookingToFormValues`(확인 체크 false), `hasMeaningfulChange`(offerId·date·startTime·spaceId·trim 메모), `EDIT_MESSAGES`, `mapSaveError(error, mode)` — 수정 모드 문구 `변경 내용을 저장하지 못했어요` / `편집 중인 내용은 유지했어요.` |
+| `lib/bookings/routes.ts` | `BOOKING_EDIT_PATH`, `bookingEditHref(id)` → `/bookings/edit?id={UUID}`(`BOOKING_ID_PARAM` 재사용) |
+| `lib/bookings/use-booking-detail.ts` | 조회 함수 `loadBookingDetail`을 export(동작 변경 없음) |
+| `components/bookings/booking-detail-screen.tsx` | 시작 전 예정 예약에만 Footer Primary `예약 수정` 링크. 예정 설명 `예약 내용을 확인하고 변경할 수 있어요.`(Figma 295:2670). 예약 관리 안내를 `예약 취소는 준비 중이에요`로 변경 |
+| `app/globals.css` | 빈 상태 문구 숨김, CONFLICT 알림 안 최신 내용·확인 버튼 스타일. 기존 토큰만 사용 |
+| `tests/booking-edit.spec.ts` (신규) | 수정 화면 브라우저 검사 15개 |
+| `tests/booking-detail.spec.ts`, `tests/booking-create.spec.ts` | 예정 예약 Footer가 `예약 목록으로` → `예약 수정`으로 바뀐 의도된 변경에 맞춰 3곳 갱신(키보드 검사는 목록 링크가 있는 종료 예약으로, 생성 흐름은 Header 뒤로가기로 목록 이동) |
+
+### 동작 규칙 (구현 결과)
+
+1. **초기값**: 저장된 `offerId`·`date`·`startTime`·`spaceId`·`memo`로 채우고 확인 체크는 항상 빈 상태. 불러오는 동안 빈 폼을 보이지 않는다(정적 HTML은 불러오는 중 화면만).
+2. **저장 필드**: 폼은 `BookingInput`만 보낸다. `id`·`createdAt`·`source`·`status`는 저장소 `updateBooking`이 유지하고 `updatedAt`만 갱신한다(상품·공간이 같으면 snapshot도 유지).
+3. **변경 없음**: 확인 체크만 바꾸거나 메모 앞뒤 공백만 바꾸거나 바꿨다가 되돌리면 `변경한 내용이 없어요. 내용을 바꾸면 저장할 수 있어요.` + `변경사항 저장` native disabled. 저장소를 호출하지 않고 성공 알림도 없다. 이탈 판단(dirty)도 같은 기준.
+4. **입력 검증**: 5단계 규칙 그대로(blur·제출 시점, `aria-invalid`·`aria-describedby`, 첫 오류 포커스, 500 code point). 확인 체크는 변경이 있을 때 제출 시 오류+포커스로 요구한다(체크 전 CTA를 미리 막지는 않음 — 명세가 허용한 두 방식 중 생성과 같은 쪽).
+5. **저장 실패**: 편집값·메모·확인 체크·스크롤 위치 유지, Loading 해제, 같은 버튼으로 재시도. LOCAL_TIME_CONFLICT는 시작 시간 필드 오류(자기 예약은 저장소가 제외).
+6. **CONFLICT**: revision만 바꿔 재시도하지 않고 `getBooking(id)`로 대상을 재조회한다. 대상 `updatedAt`이 바뀌었으면 `다른 화면에서 이 예약이 변경됐어요. 새 내용을 확인해주세요.` + 저장된 최신 날짜·시간·공간·메모를 보이고, draft는 폼에 유지한 채 저장을 막는다. `최신 내용 확인했어요`를 누르면 최신 예약을 비교 기준·revision으로 삼고 저장을 다시 허용한다. 대상이 없어졌으면 없는 ID, 취소·시간 경과면 수정 불가 상태로 전환. 다른 예약만 바뀌었으면 최신 revision으로 바꾸고 안내 후 사용자가 다시 누르면 저장.
+7. **INVALID_TRANSITION·시간 경과**: draft는 유지하고 `이 예약은 이제 수정할 수 없어요.` 알림, CTA 비활성. 화면을 열어 둔 사이 시작 시각이 지나면(`useNow` 1분 갱신) 같은 상태.
+8. **이탈**: Header 뒤로가기·`수정 취소`·브라우저 뒤로가기 모두 항상 해당 예약 상세로. 변경 없음이면 바로 이동, 변경 있으면 `수정을 그만둘까요?` / `변경한 내용은 저장되지 않아요.` / `계속 작성`·`나가기`. 새로고침·탭 닫기는 브라우저 기본 `beforeunload`. draft 저장 키 없음.
+
+### 명세·Figma와 다르게 구현한 부분 (Codex 확인 요청)
+
+1. **상세의 예약 관리 안내**: Figma Success Detail(295:2670)에는 `예약 관리` 영역이 없지만, 7단계 전까지 취소 기능이 없음을 알리기 위해 `예약 취소는 준비 중이에요` / `레슨 시작 전까지 아래 예약 수정 버튼으로 내용을 바꿀 수 있어요. 취소 기능은 아직 연결되지 않았어요.` 정보 알림을 유지했다. 예정 예약 Footer는 Figma대로 Primary `예약 수정` 하나이고, 목록으로는 Header 뒤로가기로 간다.
+2. **CONFLICT 안내 구성**(명세에 시각 프레임 없음): 오류 Inline Alert 안에 `저장된 최신 내용: {날짜} {시간} · {공간}`, `메모: …`/`메모 없음`, `편집 중인 내용은 유지했어요. 확인한 뒤 다시 저장해주세요.`와 Secondary `최신 내용 확인했어요` 버튼. 필드별 나란히 비교 UI는 만들지 않았다.
+3. **추가 문구**: 수정 불가 안내 본문 `시작 전 예정 예약만 수정할 수 있어요. 편집 중인 내용은 저장되지 않았어요.`, 조회 실패 화면 제목 `지금은 예약을 수정할 수 없어요`, 사라진 상품·공간 옵션 `{snapshot 이름} (현재 선택할 수 없음)`.
+4. **5단계와 같은 차이 유지**: 공간 옵션에 장비 표기 `(기타·앰프)`, native date 표시 형식(`11/19/2026`), 저장 실패 알림 sticky, 상태 표시줄·홈 인디케이터 제외.
+5. **상품 변경 검증 범위**: 현재 카탈로그에 활성 상품이 1개뿐이라 "다른 상품으로 바꾸기"는 카탈로그에서 사라진 상품의 예약을 현재 상품으로 다시 고르는 경우로 검사했다. 가짜 상품은 만들지 않았다.
+
+### 실행한 검증 명령과 결과
+
+| 명령 | 결과 |
+|---|---|
+| `npm run typecheck` | 통과 |
+| `npm run build` | 통과. 정적 라우트 `/`, `/_not-found`, `/bookings`, `/bookings/detail`, `/bookings/edit`, `/bookings/new`. `out/bookings/edit.html`에 LocalStorage 접근 코드 없음 |
+| `npm run dev -- --port 3100` 후 `PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright npx playwright test` | **93/93 통과**. 기존 78 + 수정 화면 15 |
+| 수정 검사 `--repeat-each 3` | 45/45 통과 |
+
+수정 검사 결과 (`tests/booking-edit.spec.ts`, 실제 브라우저 LocalStorage — 실제 동작 검증):
+
+- **진입·초기값**: 상세 `예약 수정` → `/bookings/edit?id={같은 ID}`, 상품·날짜·20:00·B 레슨실·메모가 저장값 그대로, 확인 체크만 비어 있음, 요약 `기타 · Rock / Blues`. 변경 없음 문구·저장 비활성, `수정 취소` 활성, 오류 없음. 체크만·메모 공백만 변경 → 비활성 유지, 시간 변경 → 활성, 되돌림 → 비활성, Enter 제출 → 이동·쓰기 없음(원시값 동일).
+- **정상 수정·반영·유지**: 시간 21:00·C 레슨실·앞뒤 공백 있는 2줄 메모 → 같은 ID 상세, `예약을 수정했어요` 1회, 상세 `21:00–22:00`·C 레슨실·trim 메모. 저장값: revision +1, 2건 그대로, `id`·`createdAt`·`source:'seed'`·`status` 유지, `updatedAt` 증가, snapshot C 레슨실, `acknowledged` 없음. **다른 예약은 원본과 완전히 같음**(deep equal, 목록 새로고침 후에도). 상세 새로고침 → 수정값 유지·알림 없음. 목록 → 카드 2건·해당 카드 21:00, 새로고침 후 유지.
+- **중복 제출**: 클릭 2번 + `requestSubmit()` → revision 3 → 4(1회).
+- **입력 검증**: 체크 누락 → 체크박스 포커스·`aria-invalid`·`예약 내용을 확인해주세요.`, 과거 날짜 → 날짜 포커스·`미래의 날짜와 시작 시간을 선택해주세요.`, 메모 501자 → 메모 포커스·`메모는 500자까지 입력할 수 있어요.`, 저장소 원시값 그대로.
+- **사라진 상품**: 기존 값 `김민준 선생님 · 기타 (현재 선택할 수 없음)` 비활성 옵션·필드 오류 `선택한 레슨을 이용할 수 없어요. 다시 선택해주세요.`, 현재 상품 선택 → 날짜·시간·공간만 비워짐·메모 유지·초기화 안내, 다시 고르면 저장(같은 ID·createdAt).
+- **저장 실패**: `QuotaExceededError` → `변경 내용을 저장하지 못했어요` / `저장 공간이 부족해요. 편집 중인 내용은 유지했어요.`, 일반 오류 → `편집 중인 내용은 유지했어요. 다시 시도해주세요.`. URL 그대로, 메모·공간·체크 유지, 저장소 원본 그대로, 성공 알림 없음. 복구 후 재시도 → 성공.
+- **시간 겹침**: 같은 날 20:00 다른 예약 → 시작 시간 포커스·겹침 문구. 자기 시간 19:00 유지 + 메모만 변경 → 저장 성공(자기 예약 제외), 다른 예약 불변.
+- **CONFLICT(같은 예약)**: 다른 탭처럼 대상 시간·메모 변경(revision 5) → 저장 안 함·최신 `18:00–19:00`·`메모: 다른 탭 메모` 안내, draft 유지, 저장 비활성. `최신 내용 확인했어요` → 저장 → revision 6, draft 값으로 저장.
+- **CONFLICT(다른 예약만)**: 안내 후 다시 누르면 revision 8로 저장, 추가된 예약 그대로.
+- **편집 중 취소·삭제**: 저장 시 수정 불가/없는 ID 화면으로 전환, 폼 사라짐.
+- **없는 ID·수정 불가·조회 실패**: 없는 UUID·`not-a-uuid` → `수정할 예약을 찾을 수 없어요` + `예약 목록으로`, 폼 없음, 저장값 그대로. 취소됨·종료 → `이 예약은 수정할 수 없어요` + `예약 상세로`, 저장 버튼 없음, 종료 예약 상세에는 `예약 수정` 없음. 손상 JSON → 조회 실패 알림·원본 유지, 복구 후 `다시 시도` → 폼.
+- **이탈**: 체크만 바꾼 상태 뒤로가기 → 바로 상세, `수정 취소`(변경 없음) → 바로 상세. 메모 변경 후 → Dialog·`계속 작성` 초기 포커스, Escape 후 뒤로가기 버튼 포커스 복귀·값 유지, `수정 취소` → Dialog → `계속 작성` 후 `수정 취소` 포커스 복귀, 브라우저 뒤로가기 → 같은 Dialog(URL 유지), `나가기` → 상세에 원래 메모, 저장소 원본 그대로. 탭 닫기 → `beforeunload` 기본 확인창.
+- **레이아웃**: 390×844 Footer 하단 ≤ 844, CTA 350px, 본문만 스크롤, 끝까지 스크롤하면 `수정 취소`(350px) 보임, 하단 내비 없음. 320/390/768/1440 가로 넘침 없음. 콘솔 오류 없음.
+
+디자인 확인(시각): 390×844 Unchanged·Changed(하단 스크롤)·Save Error·Not Found를 직접 촬영해 Figma와 나란히 비교했다. 제목·설명·변경 없음 문구 위치, 필드 순서, 요약 카드, 비활성 CTA, 체크·`수정 취소`·마지막 안내 순서, 오류 알림 문구·위치, 없는 ID 아이콘·문구·Secondary 버튼이 일치했다. 차이는 위 "다르게 구현한 부분" 4와 같다. 픽셀 비교 도구는 쓰지 않았다.
+
+### 알려진 제한 / 미검증
+
+- 저장 중 Loading은 LocalStorage가 동기라 한 프레임 수준이며 중복 제출 차단으로만 간접 확인했다.
+- 화면을 열어 둔 사이의 시간 경과(1분 주기 갱신)와 저장소 INVALID_TRANSITION 직접 응답은 브라우저 시계를 진행시켜 검사하지 않았다. 대신 다른 화면 취소 → CONFLICT 재조회 → 수정 불가 전환 경로를 검사했다.
+- `useLeaveGuard`의 같은 URL 기록 추가 부작용(5단계 기록 10)은 수정 화면에도 같다: 변경 후 `나가기`로 상세에 간 뒤 브라우저 뒤로가기를 누르면 수정 화면으로 한 번 돌아온다(그때는 저장값으로 다시 채워짐). Chromium에서만 확인했다.
+- LocalStorage에는 탭 간 원자 트랜잭션이 없어 완전한 동시 쓰기 보장은 하지 않는다(revision 비교로 감지만).
+- 실제 모바일 기기·스크린 리더, production `out/` 정적 서버 브라우저 검사는 하지 않았다. 배포하지 않았다.
+
+Claude 6단계 완료 여부: **완료**. 7단계는 시작하지 않았다.

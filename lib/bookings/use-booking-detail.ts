@@ -19,7 +19,7 @@ export type BookingDetailState =
  * initialize()를 기다린 뒤 getBooking(id). 이미 준비된 저장소의 initialize()는 쓰기 없는 조회라
  * 다시 시도·다른 탭 변경 반영에도 같은 경로를 쓴다. 저장값을 덮어쓰거나 지우지 않는다.
  */
-async function loadDetail(repository: BookingRepository, id: string | null): Promise<BookingDetailState> {
+export async function loadBookingDetail(repository: BookingRepository, id: string | null): Promise<BookingDetailState> {
   const init = await repository.initialize();
   if (!init.ok) {
     return init.error.code === 'NOT_READY' ? { status: 'initializing' } : { status: 'error', error: init.error };
@@ -41,7 +41,7 @@ export function useBookingDetail(id: string | null, repository: BookingRepositor
   useEffect(() => {
     activeRef.current = true;
     const refresh = () => {
-      void loadDetail(repository, id).then((next) => {
+      void loadBookingDetail(repository, id).then((next) => {
         if (activeRef.current) setState(next);
       });
     };
@@ -62,7 +62,7 @@ export function useBookingDetail(id: string | null, repository: BookingRepositor
   /** 조회 실패 화면의 다시 시도. 결과가 나올 때까지 오류 화면을 유지한다. */
   const retry = useCallback(() => {
     setRetrying(true);
-    void loadDetail(repository, id).then((next) => {
+    void loadBookingDetail(repository, id).then((next) => {
       if (!activeRef.current) return;
       setState(next);
       setRetrying(false);

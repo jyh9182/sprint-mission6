@@ -8,7 +8,9 @@ import {
   BOOKING_FORM_FIELDS,
   catalogStartTimes,
   changeOffer,
+  EDIT_MESSAGES,
   findSelectableOffer,
+  hasMeaningfulChange,
   isPastStart,
   isSameFormValues,
   mapSaveError,
@@ -51,6 +53,17 @@ export interface BookingFormProps {
   onSubmit: (input: BookingInput) => Promise<BookingFormSubmitResult>;
   /** dirty·저장 중 여부를 화면(이탈 확인)에 알린다. */
   onStateChange?: (state: { dirty: boolean; saving: boolean }) => void;
+  /**
+   * 수정 화면 전용(6단계). 스크롤 하단의 Secondary 버튼(`수정 취소`). 이탈 규칙은 호출 화면이 정한다.
+   */
+  onCancel?: () => void;
+  cancelLabel?: string;
+  /** 호출 화면이 저장을 막아야 하는 경우(시간 경과·다른 화면 변경 확인 전). 입력은 유지하고 CTA만 비활성화한다. */
+  submitBlocked?: boolean;
+  /** 본문 맨 위 고정 알림 자리에 호출 화면이 넣는 안내(저장 실패 알림보다 우선). */
+  notice?: React.ReactNode;
+  /** 카탈로그에서 사라진 기존 상품·공간을 비활성 옵션으로 보일 때의 이름(예약 snapshot 기준). */
+  unavailableLabels?: { offer?: string; space?: string };
 }
 
 const ALL_FIELDS = new Set<BookingFormField>(BOOKING_FORM_FIELDS);
@@ -66,6 +79,11 @@ export function BookingForm({
   preparing = false,
   onSubmit,
   onStateChange,
+  onCancel,
+  cancelLabel = '수정 취소',
+  submitBlocked = false,
+  notice,
+  unavailableLabels,
 }: BookingFormProps) {
   const baseId = React.useId();
   const formId = `${baseId}-form`;
@@ -85,7 +103,12 @@ export function BookingForm({
   const [values, setValues] = React.useState<BookingFormValues>(initialValues);
   const [dateBadInput, setDateBadInput] = React.useState(false);
   const [touched, setTouched] = React.useState<Set<BookingFormField>>(() => new Set());
-  const [activated, setActivated] = React.useState<Set<BookingFormField>>(() => new Set());
+  // 수정 화면: 기존 상품·시간·공간이 현재 카탈로그에서 선택할 수 없으면 처음부터 필드 오류로 재선택을 안내한다.
+  const [activated, setActivated] = React.useState<Set<BookingFormField>>(() => {
+    if (mode !== 'edit') return new Set();
+    const initialErrors = validateBookingForm(initialValues, { catalog, nowMs: Date.now() });
+    return new Set((['offerId', 'startTime', 'spaceId'] as const).filter((f) => initialErrors[f]));
+  });
   const [externalErrors, setExternalErrors] = React.useState<BookingFormErrors>({});
   const [alert, setAlert] = React.useState<FormSubmitAlert | null>(null);
   const [saving, setSaving] = React.useState(false);
@@ -102,7 +125,10 @@ export function BookingForm({
     if (message) errors[field] = message;
   }
 
-  const dirty = dateBadInput || !isSameFormValues(values, initialValues);
+  // 생성: 처음 값과 다르면 dirty. 수정: 예약 필드·trim 메모의 의미 있는 변경만 dirty(확인 체크 제외).
+  // 수정 화면의 initialValues는 비교 기준(처음 읽은 예약)이며, 호출 화면이 최신 예약을 확인하면 바뀔 수 있다.
+  const dirty = dateBadInput || (mode === 'edit' ? hasMeaningfulChange(values, initialValues) : !isSameFormValues(values, initialValues));
+  const unchangedEdit = mode === 'edit' && !dirty;
   React.useEffect(() => {
     onStateChange?.({ dirty, saving });
   }, [dirty, saving, onStateChange]);
@@ -154,7 +180,7 @@ export function BookingForm({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submittingRef.current || preparing) return;
+    if (submittingRef.current || preparing || unchangedEdit || submitBlocked) return; // Enter 제출도 같은 조건으로 막는다
     const checkNow = Date.now();
     setCheckedAt(checkNow);
     setActivated(new Set(ALL_FIELDS));
@@ -207,7 +233,9 @@ export function BookingForm({
   return (
     <>
       <div className="lc-form-viewport">
-        {alert ? (
+        {notice ? (
+          <div className="lc-form-alert">{notice}</div>
+        ) : alert ? (
           <div className="lc-form-alert">
             <InlineAlert tone="error" title={alert.title}>{alert.message}</InlineAlert>
           </div>
@@ -216,6 +244,9 @@ export function BookingForm({
           <h2 className="lc-form-intro__title">{title}</h2>
           <p className="lc-form-intro__description">{description}</p>
           {preparing ? <p className="lc-form-intro__status" role="status">예약 정보를 준비하고 있어요.</p> : null}
+          {mode === 'edit' ? (
+            <p className="lc-form-intro__status" role="status">{unchangedEdit && !preparing ? EDIT_MESSAGES.unchanged : ''}</p>
+          ) : null}
         </div>
 
         <form
@@ -244,7 +275,7 @@ export function BookingForm({
               {offers.map(({ offer, instructorName }) => (
                 <option key={offer.id} value={offer.id}>{`${instructorDisplayName(instructorName)} · ${offer.instrumentLabel}`}</option>
               ))}
-              {values.offerId && !selected ? <option value={values.offerId} disabled>현재 선택할 수 없는 레슨</option> : null}
+              {values.offerId && !selected ? <option value={values.offerId} disabled>{unavailableLabels?.offer ? `${unavailableLabels.offer} (현재 선택할 수 없음)` : '현재 선택할 수 없는 레슨'}</option> : null}
             </Select>
 
             {selected ? (
@@ -309,7 +340,7 @@ export function BookingForm({
               {spaces.map((space) => (
                 <option key={space.id} value={space.id}>{spaceOptionLabel(space)}</option>
               ))}
-              {values.spaceId && !spaces.some((s) => s.id === values.spaceId) ? <option value={values.spaceId} disabled>현재 선택할 수 없는 공간</option> : null}
+              {values.spaceId && !spaces.some((s) => s.id === values.spaceId) ? <option value={values.spaceId} disabled>{unavailableLabels?.space ? `${unavailableLabels.space} (현재 선택할 수 없음)` : '현재 선택할 수 없는 공간'}</option> : null}
             </Select>
 
             <p className="lc-form-note">표시된 일정·공간은 데모 선택 항목이며 실제 예약 가능 여부를 확인하지 않아요.</p>
@@ -343,6 +374,12 @@ export function BookingForm({
               {errors.acknowledged ? <p id={`${ids.ack}-message`} className="lc-field__error">{errors.acknowledged}</p> : null}
             </div>
 
+            {onCancel ? (
+              <Button type="button" variant="appSecondary" className="lc-detail-wide" disabled={saving} onClick={onCancel}>
+                {cancelLabel}
+              </Button>
+            ) : null}
+
             <p className="lc-form-note">이 기기의 이 브라우저에 예약 내용이 저장돼요. 실제 강사·공간 예약은 확정되지 않아요.</p>
           </fieldset>
         </form>
@@ -354,7 +391,7 @@ export function BookingForm({
           form={formId}
           variant="appPrimary"
           className="lc-detail-wide"
-          disabled={preparing || !values.offerId}
+          disabled={preparing || !values.offerId || unchangedEdit || submitBlocked}
           loading={saving}
           busyLabel={busyLabel}
         >
