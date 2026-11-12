@@ -121,3 +121,24 @@ dialog.lc-dialog::backdrop{background:var(--lc-backdrop);backdrop-filter:none}
 .lc-detail-state--error{margin-top:72px}
 .lc-detail-wide{width:100%}
 .lc-detail-footer{border-top:var(--lc-stroke) solid var(--lc-nav-border);background:var(--lc-white);padding:var(--lc-space-3) var(--lc-space-5) calc(var(--lc-space-6) + var(--lc-space-2) + env(safe-area-inset-bottom))}
+.lc-detail-flash{max-width:none;margin-bottom:var(--lc-space-4)}
+/* 5단계 예약 생성·수정 공통 폼 — Figma Booking / Form / Fields 291:2603, Initial 291:1950 · Ready 291:2020/2114 · Errors 291:2208 · Save Error 291:2399 */
+.lc-form-viewport{min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;padding:var(--lc-space-2) var(--lc-space-5) var(--lc-space-6)}
+.lc-form-alert{position:sticky;top:0;z-index:1;margin:calc(var(--lc-space-2) * -1) 0 var(--lc-space-4);padding-top:var(--lc-space-2);background:var(--lc-white)}
+.lc-form-alert .lc-alert{max-width:none}
+.lc-form-intro{display:grid;gap:var(--lc-space-2);margin-bottom:var(--lc-space-4)}
+.lc-form-intro__title{font-size:20px;line-height:29px;font-weight:700;letter-spacing:-.2px}
+.lc-form-intro__description,.lc-form-intro__status{font-size:14px;line-height:21px;color:var(--lc-muted)}
+.lc-form__fieldset{display:flex;flex-direction:column;gap:var(--lc-space-4);min-width:0;margin:0;padding:0;border:0}
+.lc-form__fieldset .lc-field{max-width:none}
+.lc-form-summary{display:grid;gap:var(--lc-space-1);padding:var(--lc-space-3) var(--lc-space-4);border-radius:var(--lc-radius-control);background:var(--lc-surface)}
+.lc-form-summary__title{font-size:14px;line-height:21px;font-weight:500;color:var(--lc-ink);overflow-wrap:anywhere}
+.lc-form-summary__detail{font-size:12px;line-height:18px;color:var(--lc-muted)}
+.lc-form-note{font-size:12px;line-height:18px;color:var(--lc-muted)}
+.lc-form-note:empty{display:none}
+.lc-form-check{display:flex;flex-direction:column;gap:var(--lc-space-2)}
+.lc-form-check__label{display:flex;align-items:center;gap:var(--lc-space-3);min-height:var(--lc-hit-target);font-size:14px;line-height:21px;color:var(--lc-ink);cursor:pointer}
+.lc-form-check__input{width:20px;height:20px;flex-shrink:0;margin:0;accent-color:var(--lc-primary);cursor:pointer}
+.lc-form-check__input:focus-visible{outline:var(--lc-stroke-focus) solid var(--lc-focus);outline-offset:2px}
+.lc-form-check__input[aria-invalid=true]{outline:var(--lc-stroke) solid var(--lc-error);outline-offset:1px}
+.lc-form-check__input[aria-invalid=true]:focus-visible{outline:var(--lc-stroke-focus) solid var(--lc-focus);outline-offset:2px}

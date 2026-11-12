@@ -50,6 +50,8 @@ export function ConfirmDialog({
   const dialogRef = React.useRef<HTMLDialogElement>(null);
   const cancelRef = React.useRef<HTMLButtonElement>(null);
   const openerRef = React.useRef<HTMLElement | null>(null);
+  /** 이 컴포넌트가 showModal로 연 상태인지. 코드가 닫은 경우와 브라우저가 직접 닫은 경우를 구분한다. */
+  const shownRef = React.useRef(false);
   const [phase, setPhase] = React.useState<Phase>('idle');
   const processing = phase === 'processing';
   const baseId = React.useId();
@@ -64,8 +66,10 @@ export function ConfirmDialog({
       openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       setPhase('idle');
       dialog.showModal();
+      shownRef.current = true;
       cancelRef.current?.focus();
     } else if (!open && dialog.open) {
+      shownRef.current = false;
       dialog.close();
     }
   }, [open]);
@@ -135,9 +139,15 @@ export function ConfirmDialog({
         e.preventDefault();
         requestClose();
       }}
-      onClose={() => {
+      onClose={(e) => {
+        // close 이벤트는 비동기로 도착한다. 그사이 다시 열렸다면 이전 닫힘의 지연된 이벤트이므로 무시한다.
+        if (e.currentTarget.open) return;
         restoreFocus();
-        if (open) onOpenChange(false);
+        // 코드가 닫은 경우는 이미 open=false다. 브라우저가 직접 닫은 경우에만 상태를 맞춘다.
+        if (shownRef.current) {
+          shownRef.current = false;
+          onOpenChange(false);
+        }
       }}
     >
       <h2 id={titleId} className="lc-dialog__title">{title}</h2>

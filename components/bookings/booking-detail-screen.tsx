@@ -9,8 +9,9 @@ import { InlineAlert } from '@/components/ui/inline-alert';
 import { PageHeader } from '@/components/ui/page-header';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { getDetailActions } from '@/lib/bookings/detail-actions';
+import { clearBookingFlash, peekBookingFlash, type BookingFlashKind } from '@/lib/bookings/flash';
 import { lessonTitle } from '@/lib/bookings/format';
-import { ERROR_MESSAGES } from '@/lib/bookings/messages';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '@/lib/bookings/messages';
 import { BOOKING_ID_PARAM, BOOKINGS_HREF } from '@/lib/bookings/routes';
 import { getBookingPhase } from '@/lib/bookings/time';
 import type { BookingPhase, LessonBooking } from '@/lib/bookings/types';
@@ -40,7 +41,10 @@ export function BookingDetailFromQuery() {
 function BookingDetailScreen({ id }: { id: string | null }) {
   const { state, retry, retrying } = useBookingDetail(id);
   const now = useNow();
-  return <BookingDetailView state={state} now={now} onRetry={retry} retrying={retrying} />;
+  // 생성·수정 화면에서 저장 성공 직후 넘어온 경우에만 한 번 보인다(메모리 전달, URL·저장소에 남기지 않음).
+  const [flash] = React.useState(() => peekBookingFlash(id));
+  React.useEffect(() => clearBookingFlash(id), [id]);
+  return <BookingDetailView state={state} now={now} onRetry={retry} retrying={retrying} flash={flash} />;
 }
 
 /** 정적 HTML·하이드레이션 전에 보이는 초기화 화면(Suspense fallback). 저장소·URL을 읽지 않는다. */
@@ -48,11 +52,17 @@ export function BookingDetailLoading() {
   return <BookingDetailView state={{ status: 'initializing' }} />;
 }
 
-function BookingDetailView({ state, now, onRetry, retrying = false }: {
+const FLASH_MESSAGES: Record<BookingFlashKind, string> = {
+  create: '이 브라우저에 예약 내용이 저장됐어요.\n실제 강사·공간 예약은 확정되지 않아요.',
+  update: '이 브라우저에 변경 내용이 저장됐어요.\n실제 강사·공간 예약은 확정되지 않아요.',
+};
+
+function BookingDetailView({ state, now, onRetry, retrying = false, flash = null }: {
   state: BookingDetailState;
   now?: Date;
   onRetry?: () => void;
   retrying?: boolean;
+  flash?: BookingFlashKind | null;
 }) {
   const router = useRouter();
   // 직접 링크로 들어와도 방문 기록에 의존하지 않고 항상 목록으로 간다.
@@ -86,7 +96,12 @@ function BookingDetailView({ state, now, onRetry, retrying = false }: {
             <Button variant="appPrimary" className="lc-detail-wide" loading={retrying} busyLabel="다시 불러오는 중…" onClick={onRetry}>다시 시도</Button>
           </div>
         ) : phase ? (
-          <BookingDetailContent booking={state.booking} phase={phase} />
+          <>
+            {flash ? (
+              <InlineAlert tone="success" title={SUCCESS_MESSAGES[flash]} className="lc-detail-flash">{FLASH_MESSAGES[flash]}</InlineAlert>
+            ) : null}
+            <BookingDetailContent booking={state.booking} phase={phase} />
+          </>
         ) : null}
       </div>
 
