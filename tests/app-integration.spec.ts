@@ -267,3 +267,33 @@ test('정적 경로 직접 진입·새로고침: /home, 상세·수정 ?id=, 없
   await page.goto(url(`/bookings/detail?id=${randomUUID()}`));
   await expect(page.getByText(/찾을 수 없어요/).first()).toBeVisible();
 });
+
+// 10단계 후속: 랜딩(/)에서 앱 홈으로 들어가는 입구. 승인된 랜딩 구성은 그대로 두고 링크만 추가했다.
+for (const width of [320, 390, 768, 1440]) {
+  test(`랜딩 → 앱 홈 입구 ${width}: 메뉴 '내 예약'·히어로 '예약 데모 보기'`, async ({ page }) => {
+    const failures = watchErrors(page);
+    await seed(page, storeOf([booking()]), width, 900);
+    await page.goto(base);
+    await page.evaluate(() => document.fonts.ready);
+    await expectNoHorizontalOverflow(page);
+
+    const hero = page.locator('.hero').getByRole('link', { name: '예약 데모 보기' });
+    await expect(hero).toHaveAttribute('href', '/home');
+
+    if (width < 768) {
+      await page.getByRole('button', { name: '메뉴 열기' }).click();
+      const menu = page.getByRole('navigation', { name: '모바일 메뉴' });
+      await menu.getByRole('link', { name: '내 예약' }).click();
+    } else {
+      await page.getByRole('navigation', { name: '주요 메뉴' }).getByRole('link', { name: '내 예약' }).click();
+    }
+    await expect(page).toHaveURL(url('/home'));
+    await expect(upcoming(page).getByRole('link', { name: /다가오는 레슨: 김민준 선생님/ })).toBeVisible();
+
+    await page.goBack();
+    await expect(page).toHaveURL(url('/'));
+    await hero.click();
+    await expect(page).toHaveURL(url('/home'));
+    expect(failures).toEqual([]);
+  });
+}

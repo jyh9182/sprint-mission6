@@ -10,7 +10,7 @@ Next.js 정적 export로 만들었고, 예약 데이터는 브라우저 LocalSto
 
 | 경로 | 내용 |
 |---|---|
-| `/` | 서비스 소개 랜딩(헤더 → 히어로 → 기능 카드 → 이용 방법 → CTA → 푸터). `서비스 체험하기`는 저장하지 않는 악기 선택 Dialog를 엽니다 |
+| `/` | 서비스 소개 랜딩(헤더 → 히어로 → 기능 카드 → 이용 방법 → CTA → 푸터). `서비스 체험하기`는 저장하지 않는 악기 선택 Dialog를 엽니다. 헤더 메뉴 `내 예약`과 히어로의 `예약 데모 보기`로 앱 홈(`/home`)에 들어갑니다 |
 | `/home` | 앱 홈. **다가오는 레슨**(저장된 예약 중 다음 예정 1건)과 **강사 예시**(김민준 기타 60분 → 사전 선택 예약) |
 | `/bookings` | 예약 목록. 검색(강사·악기·공간), 상태 필터, 정렬, 5개 단위 페이지. 조건은 URL 쿼리 `q`·`status`·`sort`·`page` |
 | `/bookings/new` | 예약 생성. `?offerId=offer-kim-guitar-60&from=home`으로 들어오면 상품만 사전 선택하고 뒤로가기는 홈으로 갑니다 |
@@ -111,8 +111,8 @@ PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright npm test
 |---|---|
 | `npm run typecheck` | 통과 |
 | `npm run build` | 통과. `/`, `/home`, `/bookings`, `/bookings/new`, `/bookings/detail`, `/bookings/edit`, `/_not-found` 정적 생성 |
-| Playwright, 개발 서버(`localhost:3100`) | **156/156 통과**(기존 142 + 10단계 통합 14) |
-| Playwright, 정적 빌드 `out/` 로컬 서빙(`.html` 확장자 없는 주소를 해당 파일로 연결) | **149 통과, 7 skip**(개발 전용 `/ui-check`) |
+| Playwright, 개발 서버(`localhost:3100`) | **160/160 통과**(기존 142 + 10단계 통합 14 + 랜딩 입구 4) |
+| Playwright, 정적 빌드 `out/` 로컬 서빙(`.html` 확장자 없는 주소를 해당 파일로 연결) | **149 통과, 7 skip**(개발 전용 `/ui-check`). 랜딩 입구 추가 전 기준이며, 추가 후에는 정적 서빙 테스트를 다시 실행하지 않음 |
 | lint | **실행하지 않음.** 프로젝트에 lint 스크립트와 ESLint 설정이 없습니다 |
 
 자동 검사로 확인한 범위:
@@ -135,7 +135,7 @@ PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright npm test
 - Figma의 음악 취향 1~5/5 단계, AI 추천 결과, 강사 상세 화면은 아직 실제 라우트가 없습니다. 랜딩의 체험 Dialog는 저장되지 않는 데모입니다.
 - 강사 진입 생성의 뒤로가기는 Figma(강사 상세)와 달리 `/home`으로 갑니다. 강사 상세 화면이 없기 때문입니다.
 - 같은 시간대 중복 검사는 이 브라우저에 저장된 예약끼리만 합니다. 실제 강사·공간 일정과 비교하지 않습니다.
-- 랜딩(`/`)에서 앱 홈(`/home`)으로 가는 링크는 없습니다(승인된 랜딩 시안 유지). 앱 화면의 하단 `홈` 탭으로 이동합니다.
+- 랜딩(`/`)의 앱 입구(헤더 `내 예약`, 히어로 `예약 데모 보기`)는 승인된 Figma 랜딩 시안에 없는 추가 요소입니다(사용자 승인 후 추가).
 
 ## 배포
 
@@ -143,7 +143,7 @@ PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright npm test
 
 - **Figma Make**: `.figma/make/deploy`(production), `.figma/make/deploy-preview`가 build 후 `figma make deploy --build-dir out`을 실행합니다. 사용자 승인 전에는 실행하지 않습니다.
 - **Vercel**: 저장소에 `vercel.json`과 `.vercel` 연결 정보가 없습니다. 연결한다면 Framework Preset은 Next.js, Build Command는 `npm run build`, Install Command는 `npm ci`, Node.js 24, 환경 변수는 없음으로 설정하면 됩니다. 배포 후 직접 URL 새로고침(`/home`, `/bookings/detail?id=…`)과 이미지를 포함한 CRUD를 배포 주소에서 다시 확인해야 합니다. preview와 production은 origin이 달라 예약 데이터가 따로 저장됩니다.
-- 현재 `origin` 원격은 `https://github.com/jyh9182/sprint-mission5.git`입니다. 폴더 이름(`sprint-mission6`)과 다르므로 push 전에 대상 저장소가 맞는지 확인해야 합니다.
+- GitHub 원격 `origin`은 `https://github.com/jyh9182/sprint-mission6.git`이며 기본 브랜치는 `main`입니다. 이전 저장소(`sprint-mission5`)는 `mission5` 원격으로 연결만 남아 있고, 9단계까지만 들어 있습니다.
 
 ## 프로젝트 구조
 

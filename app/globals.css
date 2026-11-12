@@ -230,3 +230,9 @@ dialog.lc-dialog::backdrop{background:var(--lc-backdrop);backdrop-filter:none}
 .lc-home-instructor__photo{width:var(--lc-home-photo-width);height:var(--lc-home-photo-height);flex-shrink:0;object-fit:cover;border-radius:var(--lc-radius-compact);background:var(--lc-surface)}
 .lc-home-instructor__info{display:flex;flex-direction:column;align-items:flex-start;gap:var(--lc-space-1);min-width:0}
 .lc-home-badge{display:inline-flex;align-items:center;height:24px;padding:0 var(--lc-space-2);border-radius:var(--lc-radius-full);background:var(--lc-mint);color:var(--lc-mint-ink);font-size:12px;line-height:18px;font-weight:700}
+/* 10단계 후속: 랜딩 → 앱 홈(/home) 입구. 승인된 랜딩 배치는 유지하고 안내 문구 안의 텍스트 링크로만 추가한다 */
+.prototype-link{display:inline-flex;align-items:center;gap:2px;color:var(--ink);font-weight:500;text-decoration:underline;text-underline-offset:3px}
+.prototype-link:hover{color:var(--green)}
+.prototype-link:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:4px}
+.desktop-nav a,.desktop-nav button{white-space:nowrap}
+@media(min-width:768px) and (max-width:1200px){.desktop-nav{gap:20px}}
