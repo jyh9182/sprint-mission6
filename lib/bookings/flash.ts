@@ -21,3 +21,21 @@ export function peekBookingFlash(id: BookingId | null): BookingFlashKind | null 
 export function clearBookingFlash(id: BookingId | null) {
   if (id && pending?.id === id) pending = null;
 }
+
+// 목록(`/bookings`)으로 넘기는 알림. 7단계 삭제 성공(deletedId 확인 뒤)에만 설정한다.
+export type ListFlashKind = 'delete';
+
+let pendingList: ListFlashKind | null = null;
+
+export function setListFlash(kind: ListFlashKind) {
+  pendingList = kind;
+}
+
+/** 소비하지 않는다(렌더 중 호출 가능). */
+export function peekListFlash(): ListFlashKind | null {
+  return pendingList;
+}
+
+export function clearListFlash() {
+  pendingList = null;
+}

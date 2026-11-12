@@ -11,8 +11,9 @@ import { InlineAlert } from '@/components/ui/inline-alert';
  * - Escape로 닫힌다. 배경 클릭으로는 닫히지 않는다. 처리 중에는 Escape·취소를 막는다.
  * - onConfirm이 성공을 반환한 뒤에만 닫고 onSuccess를 호출한다(결과 알림은 호출 화면에서 표시).
  *   실패하면 Error 상태로 바꾸고 같은 확인 버튼으로 다시 시도할 수 있다.
+ * - `{ ok: false, close: true }`는 성공 없이 닫는다(대상이 바뀌어 최신 상태를 다시 보여줘야 하는 경우). onSuccess는 부르지 않는다.
  */
-export type ConfirmResult = { ok: true } | { ok: false };
+export type ConfirmResult = { ok: true } | { ok: false; close?: boolean };
 
 type Phase = 'idle' | 'processing' | 'error';
 
@@ -31,6 +32,7 @@ export function ConfirmDialog({
   onConfirm,
   onSuccess,
   returnFocusRef,
+  resolveReturnFocus,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -46,6 +48,8 @@ export function ConfirmDialog({
   onSuccess?: () => void;
   /** 닫힌 뒤 포커스를 돌려줄 요소. 없으면 Dialog를 연 요소로 돌아간다(문서에서 사라졌으면 생략). */
   returnFocusRef?: React.RefObject<HTMLElement | null>;
+  /** 닫힌 시점에 포커스 대상을 계산한다(상태 변경으로 원래 버튼이 사라진 경우 등). null이면 기본 규칙을 따른다. */
+  resolveReturnFocus?: () => HTMLElement | null;
 }) {
   const dialogRef = React.useRef<HTMLDialogElement>(null);
   const cancelRef = React.useRef<HTMLButtonElement>(null);
@@ -53,6 +57,8 @@ export function ConfirmDialog({
   /** 이 컴포넌트가 showModal로 연 상태인지. 코드가 닫은 경우와 브라우저가 직접 닫은 경우를 구분한다. */
   const shownRef = React.useRef(false);
   const [phase, setPhase] = React.useState<Phase>('idle');
+  /** 상태 반영 전 같은 틱에 들어온 두 번째 클릭·Enter도 막는다. */
+  const runningRef = React.useRef(false);
   const processing = phase === 'processing';
   const baseId = React.useId();
   const titleId = `${baseId}-title`;
@@ -75,7 +81,7 @@ export function ConfirmDialog({
   }, [open]);
 
   function restoreFocus() {
-    const target = returnFocusRef?.current ?? openerRef.current;
+    const target = resolveReturnFocus?.() ?? returnFocusRef?.current ?? openerRef.current;
     if (target?.isConnected) target.focus();
     openerRef.current = null;
   }
@@ -86,18 +92,23 @@ export function ConfirmDialog({
   }
 
   async function handleConfirm() {
-    if (processing) return;
+    if (processing || runningRef.current) return;
+    runningRef.current = true;
     setPhase('processing');
-    let ok = false;
+    let result: ConfirmResult = { ok: false };
     try {
-      ok = (await onConfirm()).ok;
+      result = await onConfirm();
     } catch {
-      ok = false;
+      result = { ok: false };
     }
-    if (ok) {
+    runningRef.current = false;
+    if (result.ok) {
       setPhase('idle');
       onOpenChange(false);
       onSuccess?.();
+    } else if (result.close) {
+      setPhase('idle');
+      onOpenChange(false);
     } else {
       setPhase('error');
     }

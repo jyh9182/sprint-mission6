@@ -16,7 +16,11 @@
 - 5단계 Claude: **예약 생성 구현·검증 완료 (2026-11-12)**. `/bookings/new` 단일 스크롤 폼, 공통 `BookingForm`(6단계 수정 재사용), 저장 성공 후 상세 이동·성공 알림 1회, 저장 실패 시 입력 유지, 이탈 확인. 아래 "Claude 5단계 구현 기록" 참조.
 - 6단계 Codex: **예약 수정의 변경 없음·편집·저장 실패·이탈·없는 ID·수정 불가·성공 상세 7개 Figma 프레임 제작, 시각 검수·인계 문서 완료**. 
 - 6단계 Claude: **예약 수정 구현·검증 완료 (2026-11-12)**. `/bookings/edit?id={UUID}`, 상세 예정 예약 Footer Primary `예약 수정` 연결, 공통 `BookingForm(mode='edit')` 재사용, 의미 있는 변경만 저장 가능, CONFLICT 시 대상 재조회. 아래 "Claude 6단계 구현 기록" 참조.
-- Figma: 기존 홈·음악 취향·예약 제품 화면과 3~5단계 화면 유지. 6단계 핵심 차이만 추가.
+- 7단계 Codex: **취소·삭제 확인/처리 중/실패와 완료 상세·목록 8개 Figma 프레임 제작, 시각 검수·인계 문서 완료**.
+- 7단계 Claude: **예약 취소·기록 삭제 구현·검증 완료 (2026-11-12)**. 상세 `예약 관리`의 준비 중 안내를 `예약 취소`/`예약 기록 삭제` + 공통 `ConfirmDialog`로 교체. 취소는 status 변경·기록 유지, 삭제는 해당 ID 제거 후 목록 이동·성공 알림 1회, 0건 재시드 없음. 아래 "Claude 7단계 구현 기록" 참조.
+- 8단계 Codex: **예약 목록 탐색의 기본·조건 적용·결과 없음 3개 Figma 프레임과 상태 칩 2종 제작, 시각 검수·URL/복귀 명세 완료**.
+- 8단계 Claude: **목록 탐색 구현·검증 완료 (2026-11-12)**. `/bookings`에 검색·상태 칩·정렬·5개 단위 페이지, 조건은 URL 쿼리(`q→status→sort→page`)만 단일 출처, 잘못된 쿼리 정규 URL replace, 범위 밖 페이지 보정, 상세·수정·취소·삭제에서 목록 조건 유지. 아래 "Claude 8단계 구현 기록" 참조.
+- Figma: 기존 홈·음악 취향·예약 제품 화면과 1~7단계 화면 유지. 8단계 탐색 상태만 추가.
 - 배포: 수행하지 않음.
 
 ## 작업 경로와 인계 주의
@@ -25,7 +29,7 @@
 
 현재 디자인 작업 폴더에는 AGENTS.md, CLAUDE.md, design/README.md, design/brief.md와 앱 소스가 없다. 실제 앱 프로젝트는 `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`로 확인했으며 4단계에서 `AGENTS.md`, `CLAUDE.md`, `next.config.ts`, `lib/bookings/routes.ts`를 읽었다. IDE 탭 자체의 내용은 읽지 못했다. 디자인 폴더와 앱 프로젝트의 파일은 자동 동기화되지 않는다.
 
-Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/06-booking-edit.md`까지, 이 진행 기록을 실제 앱 프로젝트에 전달하고 그 프로젝트의 작업 규칙·브리프와 대조해야 한다. 기존 같은 이름의 문서가 있다면 덮어쓰지 말고 내용을 비교·병합한다. 현재 폴더에서 새 Next.js 앱을 만들지 않는다.
+Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/08-list-discovery.md`까지, 이 진행 기록을 실제 앱 프로젝트에 전달하고 그 프로젝트의 작업 규칙·브리프와 대조해야 한다. 기존 같은 이름의 문서가 있다면 덮어쓰지 말고 내용을 비교·병합한다. 현재 폴더에서 새 Next.js 앱을 만들지 않는다.
 
 ## 산출물
 
@@ -36,6 +40,8 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/06-b
 - [4단계 예약 상세 인계](steps/04-booking-detail.md): 7개 Figma 프레임, snapshot·메모·액션 조건, 정적 export URL 매핑, Claude 완료 조건.
 - [5단계 예약 생성 인계](steps/05-booking-create.md): 단일 스크롤 폼·필드 연동·검증·저장·이탈·성공 이동, 8개 Figma 프레임, Claude 완료 조건.
 - [6단계 예약 수정 인계](steps/06-booking-edit.md): 기존값·변경 여부·상태 제한·미저장 이탈·오류·수정 완료 상세, 7개 Figma 프레임, Claude 완료 조건.
+- [7단계 취소·삭제 인계](steps/07-cancel-delete.md): 상태별 액션, 확인/처리/실패 Dialog, 취소 후 상세·삭제 후 목록, 8개 Figma 프레임, Claude 완료 조건.
+- [8단계 예약 목록 탐색 인계](steps/08-list-discovery.md): 검색·상태·정렬·페이지, URL 쿼리·상세 복귀, 3개 Figma 프레임, Claude 완료 조건.
 - 이 진행 기록: Codex/Claude 단계별 상태와 재개 지점.
 
 ## 최신 Figma 근거
@@ -44,7 +50,7 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/06-b
 
 - 홈 `23:67`, 음악 취향 `42:136`: 390×844, 스크린샷 검수.
 - 기존 예약 흐름: 일정 `163:833` → 공간 `178:1041` → 확인 `186:1158` → 완료 `199:1279`.
-- 기존 구조에서 12개 제품 화면을 확인했고, 3단계 목록 5개·4단계 상세 7개·5단계 생성 8개·6단계 수정 7개 화면을 추가했다.
+- 기존 구조에서 12개 제품 화면을 확인했고, 3단계 목록 5개·4단계 상세 7개·5단계 생성 8개·6단계 수정 7개·7단계 취소/삭제 8개 화면을 추가했다.
 - 과거 기록의 `7:2`, `16:94`, `7:5`는 조회되지 않음. `work/design-system-state-lessonconnect.json`을 최신 마스터로 사용하지 말 것.
 - 현재 스타일은 검정 CTA·밝은 중립색·사진형 카드·Noto Sans KR. 기존 색상·스타일을 재설계하지 않음.
 - 2단계 Figma 마스터 영역 `273:1454`, 상태 인스턴스 검수 보드 `279:1459`. 기존 Primary `188:1164`, Secondary 기본 `47:188`, 안내 기본 `188:1182`를 유지했다.
@@ -52,6 +58,8 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/06-b
 - 4단계 Information Card `285:1808`, Memo Card `285:1828`; 정상 `286:1807`, 메모 없음 `286:1869`, 긴 메모 `286:1931`, 취소됨 `286:1993`, 없는 ID `286:2055`, 초기화 `286:2090`, 조회 실패 `286:2123`.
 - 5단계 Form / Fields `291:2603`; Initial `291:1950`, Ready `291:2020`, Ready Scrolled `291:2114`, Errors `291:2208`, Saving `291:2303`, Save Error `291:2399`, Leave Confirm `291:2500`, Success Detail `291:2647`.
 - 6단계 기존값/변경 없음 `295:2272`, 편집 `295:2355`, 저장 실패 `295:2433`, 이탈 확인 `295:2518`, 없는 ID `295:2605`, 수정 불가 `295:2637`, 성공 상세 `295:2670`.
+- 7단계 취소 확인 `299:2478`·처리 `299:2520`·오류 `299:2564`·완료 상세 `299:2748`; 삭제 확인 `299:2613`·처리 `299:2655`·오류 `299:2699`·완료 목록 `299:2792`.
+- 8단계 기본 `302:2781`·조건 적용 `302:2896`·결과 없음 `302:3007`; 상태 칩 Default `302:2777`·Selected `302:2779`.
 
 ## 확정 설계 결정
 
@@ -65,6 +73,8 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/06-b
 8. 실제 앱 규칙·기존 카탈로그 ID와의 정합성은 Claude 착수 시 확인.
 9. 정적 export를 유지한다. ID별 상세의 논리 범위는 `/bookings/[id]`지만 실제 URL은 `/bookings/detail?id={UUID}`로 매핑하고 `bookingDetailHref` 한 곳에서 생성한다.
 10. 6단계 수정의 논리 범위는 `/bookings/[id]/edit`, 실제 URL은 `/bookings/edit?id={UUID}`다. 시작 전 scheduled만 수정 가능하며 변경 없음은 저장하지 않는다.
+11. 7단계 취소는 시작 전 scheduled의 상태 변경·기록 유지, 삭제는 cancelled 또는 종료된 scheduled의 해당 레코드 제거다. 둘 다 확인 Dialog 뒤에만 실행하며 결제·환불 처리는 없다.
+12. 8단계 목록 탐색은 LocalStorage 조회 결과의 파생 UI다. `q/status/sort/page`를 URL에서 관리하고, 조건 변경은 1페이지로 초기화한다. 상세·수정·취소·삭제 이후 유효한 목록 조건으로 복귀한다.
 
 ## 10단계 상태
 
@@ -76,8 +86,8 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/06-b
 | 4 | 예약 상세 | Figma·문서 완료 | 구현·검증 완료 (수정 진입은 6단계, 취소·삭제 실행은 7단계에서 연결) |
 | 5 | 예약 생성 폼 | Figma·문서 완료 | 구현·검증 완료 (수정 화면 연결은 6단계) |
 | 6 | 예약 수정 | Figma·문서 완료 | 구현·검증 완료 (취소·삭제 실행은 7단계) |
-| 7 | 취소·삭제 | 미착수 | 미착수 |
-| 8 | 검색·필터·정렬·페이지 | 미착수 | 미착수 |
+| 7 | 취소·삭제 | Figma·문서 완료 | 구현·검증 완료 |
+| 8 | 검색·필터·정렬·페이지 | Figma·문서 완료 | 구현·검증 완료 |
 | 9 | 이미지 첨부·계약 확장 | 미착수 | 미착수 |
 | 10 | 통합·검수·최종 인계 | 미착수 | 미착수 |
 
@@ -94,17 +104,22 @@ Claude 구현 전 `data-contract.md`, `steps/01-foundation.md`부터 `steps/06-b
 - 4단계 7개 390×844 화면 스크린샷 검수. 긴 메모 viewport `VERTICAL` 스크롤·클립 350×636, 내부 콘텐츠 871px, Footer y=744 고정 확인. 모든 화면 Noto Sans KR·편집 가능 노드, 원본 홈·목록 유지.
 - 5단계 8개 390×844 화면과 Form / Fields 마스터 제작. Initial·Ready 상하·Errors·Saving·Save Error·Leave Confirm·Success Detail 스크린샷 검수. 잘린 Auto Layout 높이를 1040px로 수정했고, 오류값·이탈 버튼 문구·성공 메모 예시를 바로잡았다. 본문 viewport 350×636·Footer y=744 고정. 홈·기존 화면은 수정하지 않았다.
 - 6단계 7개 390×844 핵심 차이 화면 스크린샷 검수. 5단계 폼·2단계 필드/버튼/Dialog/Alert와 4단계 상세 상태를 재사용했다. 변경 없음 CTA 비활성, 편집값·확인 체크·수정 취소, 저장 실패, 이탈 Dialog, 없는 ID·수정 불가, 성공 상세가 겹침 없이 보인다. 원본 화면은 수정하지 않았다.
+- 7단계 8개 390×844 화면 스크린샷 검수. 취소·삭제 각각 공통 Dialog Default/Processing/Error와 완료 상세·목록이 보인다. 처리 중 중복 입력 차단 상태, 실패 Alert, 삭제 복구 불가 문구, 취소 후 기록·삭제 후 0건 예시를 확인했다. 원본 화면은 수정하지 않았다.
+- 8단계 3개 390×844 화면 스크린샷 검수. 기본 페이지 컨트롤, 조건 적용 칩·요약, 결과 없음·초기화 버튼 확인. 기존 Card/Header/CTA/Bottom Nav 인스턴스를 유지하고 새 상태 칩은 컴포넌트 인스턴스로 배치했다. 목록 viewport 350×238 세로 스크롤·클립, 하단 내비게이션 y=767 확인. 앱 코드는 수정하지 않았다.
 - 런타임 F01~F17: Claude가 실행, 전부 통과 (1단계 기록).
 - 2단계 공통 UI·3단계 목록 런타임 검사: Claude가 실행, 전부 통과 (각 단계 기록).
 - 4단계 상세·5단계 생성 런타임 검사: Claude가 실행, 전체 78/78 통과 (5단계 기록).
+- 6단계 수정 런타임 검사: Claude가 실행, 전체 93/93 통과 (6단계 기록).
+- 7단계 취소·삭제 런타임 검사: Claude가 실행, 전체 106/106 통과 (7단계 기록).
+- 8단계 목록 탐색 런타임 검사: Claude가 실행, 전체 121/121 통과 (8단계 기록).
 
 ## 다음 작업 / 재개 지점
 
-Claude 1~6단계 완료. 실제 앱 프로젝트 경로는 `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`이다. **다음은 Codex 7단계 취소·삭제 설계**다. 6단계 이후 상세 예정 예약의 `예약 관리` 안내는 `예약 취소는 준비 중이에요`로 바뀌었고 Footer는 Primary `예약 수정`이다(아래 "Claude 6단계 구현 기록").
+Claude 1~8단계 완료. 실제 앱 프로젝트 경로는 `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`이다. **다음은 Codex 9단계(이미지 첨부·계약 확장) 설계**다. 8단계 목록 조건 계약은 `lib/bookings/discovery.ts`(파싱·정규화·검색/필터/정렬/페이지)와 `lib/bookings/routes.ts`의 `bookingListHref(context)`·`bookingDetailHref(id, context?)`·`bookingEditHref(id, context?)`에 있다(아래 "Claude 8단계 구현 기록").
 
-**6단계 수정에서 재사용할 것(5단계 구현)**: `components/bookings/booking-form.tsx`의 `BookingForm`은 `mode: 'edit'`, `initialValues`(기존 예약에서 만든 `BookingFormValues`, 확인 체크는 `false`로 시작해 매번 새로 확인), `onSubmit`(→ `updateBooking`), `submitLabel`을 받는다. 검증·문구·상품 변경 시 종속 값 정리는 `lib/bookings/form.ts`, 저장 실패 표시는 `mapSaveError`, 성공 알림은 `setBookingFlash(id, 'update')`(상세에 `예약을 수정했어요` 1회), 이탈 확인은 `useLeaveGuard` + `ConfirmDialog`를 그대로 쓴다. 카탈로그에서 사라진 기존 상품·공간·시각은 선택 목록에 비활성 옵션으로 보이고 저장 전 재선택 오류가 난다. 수정 URL `/bookings/edit?id={UUID}`와 상세 Footer `예약 수정`을 6단계 구현에서 연결한다. 현재 `BookingForm`의 dirty는 확인 체크까지 포함하므로, 6단계에서는 예약 필드의 정규화된 의미 있는 변경을 별도 계산해야 한다.
+**6단계 수정 구현 완료**: `components/bookings/booking-form.tsx`는 `mode: 'edit'`에서 의미 있는 예약 필드 변경만 dirty로 계산하고, 변경 없음 저장을 막는다. `lib/bookings/form.ts`의 검증·문구, `mapSaveError`, `setBookingFlash(id, 'update')`, `useLeaveGuard` + `ConfirmDialog`를 재사용한다. 정적 URL `/bookings/edit?id={UUID}`와 예정 상세 Footer `예약 수정`도 연결됐다. 자세한 검증은 아래 Claude 6단계 기록을 참조한다.
 
-**6·7단계로 넘긴 상세 액션**: 상세 화면의 허용 조건은 `lib/bookings/detail-actions.ts`의 `getDetailActions(phase)`에 구현돼 있다(예정=수정·취소, 진행 중=없음, 종료·취소됨=삭제). 현재는 그 자리에 정보 알림 `예약 수정·취소는 준비 중이에요` / `예약 기록 삭제는 준비 중이에요`만 있고, Footer는 모든 조회 상태에서 Secondary `예약 목록으로`다. 6단계에서 수정 화면 정적 URL을 정하면 예정 상태 Footer를 Primary `예약 수정`으로 바꾸고, 7단계에서 확인 Dialog(2단계 `ConfirmDialog`)를 연결하면서 안내를 `예약 취소`·`예약 기록 삭제` 버튼과 Figma 안내 문구로 교체한다. 확인 없이 `cancelBooking`/`deleteBooking`을 호출하지 않는다.
+**7단계 취소·삭제 구현 완료**: `getDetailActions(phase)`에 따라 `예약 관리`에 Secondary `예약 취소`(+`레슨 시작 전까지 취소할 수 있어요.`) 또는 `예약 기록 삭제`(+오류색 `삭제한 기록은 복구할 수 없어요.`)를 표시한다. 버튼은 Dialog만 열고, 확인 버튼에서만 Dialog를 연 시점의 revision으로 `cancelBooking`/`deleteBooking`을 한 번 호출한다. 자세한 규칙·검증은 아래 Claude 7단계 기록을 참조한다.
 
 **4단계 URL 결정**: 앱의 정적 export(`output: 'export'`)에서는 런타임에 생기는 예약 ID를 `generateStaticParams`로 열거할 수 없다. 서버 rewrite·서버 전환을 추가하지 않고, ID별 상세의 실제 URL을 `/bookings/detail?id={UUID}`로 매핑한다. Claude는 `lib/bookings/routes.ts`의 `bookingDetailHref`를 이 형식으로 변경해 3단계 목록 카드의 404 목적지도 함께 연결한다. `/bookings/[id]`는 논리적 화면 범위다. 6단계 수정 URL도 정적 export에 맞춰 별도 매핑한다.
 
@@ -591,3 +606,173 @@ progress 확인: 이번 단계 시작 시 Claude 1~5단계 기록 섹션은 삭�
 - 실제 모바일 기기·스크린 리더, production `out/` 정적 서버 브라우저 검사는 하지 않았다. 배포하지 않았다.
 
 Claude 6단계 완료 여부: **완료**. 7단계는 시작하지 않았다.
+
+---
+
+## Claude 7단계 구현 기록 (2026-11-12)
+
+실제 앱 프로젝트 절대 경로: `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`
+
+읽은 근거: CLAUDE.md, design/steps/07-cancel-delete.md, 04-booking-detail.md(상태별 액션 조건), 이 진행 기록, 저장소 `cancelBooking`·`deleteBooking`(1단계 구현 — 이번 단계에서 수정하지 않음), 2단계 `ConfirmDialog`·`InlineAlert`·`Button`, 4~6단계 상세·목록·flash. Figma MCP로 예정 상세 `286:1807`, 취소됨 상세 `286:1993`, Cancel Success Detail `299:2748`, Delete Error `299:2699`, Delete Success List `299:2792` 스크린샷을 직접 확인했다. Cancel Default/Processing/Error·Delete Default/Processing은 명세 문구표와 Delete Error 프레임(같은 공통 Dialog)으로 대조했다.
+
+progress 확인: 이번 단계 시작 시 Claude 1~6단계 기록 섹션은 삭제되지 않았다(Codex가 7단계 항목만 추가). 복원 작업은 필요 없었다.
+
+### 변경 파일
+
+| 파일 | 내용 |
+|---|---|
+| `components/bookings/booking-detail-screen.tsx` | 준비 중 안내 제거. `예약 관리`에 `예약 취소`/`예약 기록 삭제` Secondary 버튼 + 안내 문구. 화면 단위 `ConfirmDialog` 1개(취소·삭제 문구 전환). 취소 성공 → 같은 ID 재조회·`예약을 취소했어요` 1회·제목 포커스. 삭제 성공(`deletedId` 일치) → `setListFlash('delete')` 후 `/bookings`. 실패 코드별 처리(아래 규칙) |
+| `components/ui/confirm-dialog.tsx` | **최소 확장**: (1) 결과 `{ ok:false, close:true }` = 성공 없이 닫기(onSuccess 미호출), (2) `runningRef`로 상태 반영 전 같은 틱의 두 번째 클릭·Enter 차단, (3) `resolveReturnFocus` — 닫힌 시점에 포커스 대상을 계산. 기존 사용처 동작은 그대로 |
+| `components/bookings/booking-list-screen.tsx` | 삭제 성공 직후에만 `내 레슨` 위 성공 Alert `예약 기록을 삭제했어요` / `삭제한 기록은 복구할 수 없어요.`, 마운트 시 Alert로 포커스 |
+| `lib/bookings/flash.ts` | 목록용 1회 알림 `setListFlash`/`peekListFlash`/`clearListFlash`(메모리 전달, URL·저장소에 남기지 않음) |
+| `lib/bookings/use-booking-detail.ts` | `reload()`(재조회 후 상태 반영·반환)와 `repository` 반환, `pageshow`(bfcache 복귀) 시 재조회 |
+| `lib/bookings/use-now.ts` | `useNowClock()` → `[now, refresh]` 추가. 재조회 직후 진행 중·종료를 즉시 다시 판정. 기존 `useNow()`는 그대로 |
+| `lib/bookings/detail-actions.ts` | 주석만 현재 단계로 갱신(규칙 변경 없음) |
+| `app/globals.css` | `.lc-detail-manage__hint`(12px muted)·`--danger`(`--lc-error`), 제목 프로그램 포커스 외곽선 제거, `.lc-list-flash`. 기존 토큰만 사용 |
+| `tests/booking-cancel-delete.spec.ts` (신규) | 취소·삭제 브라우저 검사 13개 |
+| `tests/booking-detail.spec.ts` | 준비 중 안내 검사 3곳을 실제 액션 검사로 갱신, 종료 예약 키보드 순서에 `예약 기록 삭제` 추가(의도된 변경) |
+
+### 동작 규칙 (구현 결과)
+
+1. **노출**: 시작 전 예정=`예약 취소`만, 종료·취소됨=`예약 기록 삭제`만, 진행 중=`예약 관리` 영역 없음. 비활성 버튼으로 남기지 않는다. 불러오는 중·없는 ID·조회 실패에는 액션 없음.
+2. **확인 전 쓰기 없음**: 상세 버튼은 Dialog만 연다. 이때 대상 ID·revision을 확보하고, 확인 버튼에서만 그 revision으로 저장 함수를 1회 호출한다. Dialog를 연 사이 다른 탭 변경·시간 경과는 저장소가 CONFLICT/INVALID_TRANSITION으로 거절한다.
+3. **Dialog**: 명세 문구 그대로. 열리면 `유지하기` 포커스, Tab/Shift+Tab 순환, Escape·`유지하기`로 닫고 원래 버튼 포커스 복귀, 배경 클릭 무시, `aria-labelledby`/`aria-describedby`. 처리 중 확인 버튼 Loading(`취소 중…`/`삭제 중…`, `aria-busy`)·`유지하기` disabled·Escape 차단. 인위적 지연 없음.
+4. **취소 성공**: 저장값은 `status:'cancelled'`, `cancelledAt = updatedAt = 실행 시각`, revision +1. ID·예약 정보·메모·`createdAt`·`source`·snapshot·envelope 유지. 상세 재조회 → `취소됨` Badge·`이 예약은 취소되었어요.`·기존 정보, `예약 수정`·`예약 취소` 제거, `예약 기록 삭제` 표시, Footer `예약 목록으로`. 성공 Alert는 같은 화면에서 1회(새로고침하면 없음). 원래 버튼이 사라지므로 포커스는 상세 제목.
+5. **이미 취소(무변경 성공, revision 동일)**: 성공 Alert 없이 재조회하고 정보 Alert `이미 취소된 예약이에요.`를 보인다.
+6. **삭제 성공**: 해당 ID만 배열에서 제거(revision +1, `initializedAt`·`seedVersion` 유지). `deletedId`가 요청 ID와 같을 때만 목록 이동·성공 Alert 1회·Alert 포커스. 남은 카드·건수 재계산, 0건이면 빈 상태. 키가 null일 때만 시드하므로 0건 저장소는 재시드되지 않는다. 이전 상세 URL·브라우저 뒤로가기 → `예약을 찾을 수 없어요`.
+7. **쓰기 실패**(`QUOTA_EXCEEDED`·`STORAGE_UNAVAILABLE`·`WRITE_FAILED`): Dialog Error(`role=alert`), 처리 중 해제, 확인 버튼 재활성. 화면·LocalStorage 원본 유지, 이동·성공 Alert 없음, Dialog 밖 중복 오류 없음. 재시도는 같은 revision으로 다시 실행하며 저장소가 최신 revision·상태를 다시 판정한다.
+8. **최신 상태 재조회**(`CONFLICT`·`INVALID_TRANSITION`·`NOT_FOUND`): 자동 재실행 없이 Dialog를 닫고 `getBooking(id)` 재조회 + 현재 시각 재판정. 상세가 남으면 정보 Alert `예약 정보를 다시 불러왔어요` + 오류 문구, 없어졌으면 없는 ID 화면. 다른 탭이 먼저 삭제한 경우에도 목록으로 보내거나 성공 안내를 하지 않는다. 포커스는 같은 동작 버튼이 남아 있으면 그 버튼, 아니면 상세 제목.
+9. **읽기 문제**(`CORRUPT_DATA`·`UNSUPPORTED_VERSION`): Dialog를 닫고 상세의 조회 실패 화면·`다시 시도`(읽기 전용)로 전환. 자동 초기화·시드·삭제 없음.
+
+### 명세·Figma와 다르게 구현한 부분 (Codex 확인 요청)
+
+1. **재조회 안내 문구**(명세에 시각 프레임·문구 없음): CONFLICT/INVALID_TRANSITION 뒤 상세 상단 정보 Alert 제목 `예약 정보를 다시 불러왔어요`, 본문은 기존 `ERROR_MESSAGES`(예: `다른 화면에서 예약 정보가 변경됐어요. 새 정보를 확인한 뒤 다시 시도해주세요.`). 성공 Alert와 같은 자리.
+2. **이미 취소 안내 본문**: 명세 제목 `이미 취소된 예약이에요.`에 본문 `예약 기록은 이 브라우저에 남아 있어요.`를 붙였다. 현재 저장소에서는 같은 revision으로 이미 취소된 예약에 취소 버튼이 보이는 경로가 없어 브라우저 검사로는 재현하지 않았다.
+3. **취소 성공 Alert 줄바꿈**: 명세 한 줄 문구를 Figma 299:2748처럼 `…남아 있어요.` 뒤에서 줄바꿈했다.
+4. **포커스 대상**: 취소 성공은 새 `예약 기록 삭제`가 아니라 상세 제목으로 보낸다(명세가 허용한 두 방식 중, Badge·성공 Alert를 이어 읽을 수 있는 쪽). 삭제 성공은 목록 성공 Alert.
+5. **목록 성공 Alert 간격**: Figma 299:2792에 맞춰 Header 아래 16px, `내 레슨`까지 24px(+기존 14px).
+6. **상태 표시줄·홈 인디케이터**는 이전 단계와 같이 앱 화면에서 제외.
+
+### 실행한 검증 명령과 결과
+
+| 명령 | 결과 |
+|---|---|
+| `npm run typecheck` | 통과 |
+| `npm run build` | 통과. 정적 라우트 `/`, `/_not-found`, `/bookings`, `/bookings/detail`, `/bookings/edit`, `/bookings/new` (서버 기능 추가 없음) |
+| `npm run dev -- --port 3100` 후 `PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright npx playwright test` | **106/106 통과**. 기존 93 + 취소·삭제 13 |
+
+취소·삭제 검사 결과 (`tests/booking-cancel-delete.spec.ts`, 실제 브라우저 LocalStorage — 실제 동작 검증):
+
+- **Dialog 열기·닫기**: `예약 취소` → Dialog 이름·설명 일치, `유지하기` 포커스, 원시값 그대로(확인 전 쓰기 없음). Tab/Shift+Tab 순환, 배경 클릭 무시, Escape·`유지하기` → 닫힘·`예약 취소` 포커스 복귀·예정 유지. 삭제 Dialog도 문구·`유지하기` 포커스·Escape 후 `예약 기록 삭제` 포커스 복귀.
+- **취소 성공**: 2건 중 대상만 `status`·`cancelledAt`·`updatedAt` 변경(나머지 필드 deep equal), `cancelledAt === updatedAt`, revision 3→4, `initializedAt` 유지, 다른 예약 불변. 취소됨·메모 유지·수정/취소 없음·삭제 표시·`예약 목록으로`, 성공 Alert 1개, 제목 포커스. 새로고침 → 취소됨 유지·Alert 없음. 목록 카드 `취소됨`, 2건 유지.
+- **중복 실행 방지**: 확인 버튼 동기 클릭 3회 + Enter keydown → revision +1(1회), 성공 Alert 1개.
+- **취소 저장 실패**: `QuotaExceededError`·일반 오류 → Dialog `취소하지 못했어요` / `기존 예약은 유지했어요. 다시 시도해주세요.`, 확인 버튼 활성·`aria-busy` 없음, `유지하기` 활성, 오류 Alert 1개, 원시값 그대로. 닫으면 예정 유지·성공 없음. 복구 후 다시 열면 Default 상태, 확인 → 취소 성공.
+- **삭제 실패**: 일반 오류 → `삭제하지 못했어요` / `기록은 그대로예요. 다시 시도해주세요.`, URL·원시값 그대로.
+- **삭제 성공**: 취소됨 + 예정 2건 → `/bookings`, 성공 Alert 1개·포커스, 카드 1개·`예약 1건`, 저장값 `bookings`가 남은 예약과 deep equal, envelope 유지. 브라우저 뒤로가기 → 이전 상세 URL에서 `예약을 찾을 수 없어요`·삭제 버튼 없음. 목록 재방문 → Alert 없음.
+- **종료된 예정 예약 삭제**: 종료 Badge·취소 없음, 같은 삭제 Dialog로 삭제.
+- **전체 삭제 후 재시드 없음**: 2건을 차례로 삭제 → `아직 예약한 레슨이 없어요`·`예약 0건`. 새로고침·목록 재방문·홈 경유 재방문 모두 0건, 저장값 `{schemaVersion:1, revision:5, initializedAt 유지, seedVersion:1, bookings:[]}`.
+- **CONFLICT(같은 예약이 다른 화면에서 취소됨)**: Dialog 닫힘, 취소됨 표시, 성공 Alert 없음, 재조회 안내, 제목 포커스, 저장값은 다른 화면 값 그대로(덮어쓰지 않음).
+- **CONFLICT(다른 예약만 변경)**: 자동 재실행 없음(revision 7 그대로), `예약 취소` 포커스 복귀. 다시 누르면 revision 8로 취소, 추가된 예약 불변.
+- **NOT_FOUND(다른 화면에서 이미 삭제)**: 없는 ID 화면, URL 그대로, 삭제 성공 Alert·목록 이동 없음.
+- **INVALID_TRANSITION(Dialog 연 사이 레슨 시작)**: `page.clock`으로 시작 30초 전에 열고 시각만 시작+60초로 이동 → 취소되지 않음, 진행 중 Badge·관리 영역 없음, 제목 포커스, 원시값 그대로.
+- **손상된 저장값에서 실행**: 조회 실패 화면·`다시 시도`, 원본 `{broken` 유지.
+- **회귀**: 홈·생성·수정·상세·목록·공통 UI 기존 93개 모두 통과(상세 검사는 의도된 변경 2건 갱신). 콘솔 오류 없음.
+
+디자인 확인(시각): 390×844로 예정 상세·취소 Dialog·취소 Error·취소 완료 상세·삭제 Dialog·삭제 완료 목록(0건)을 직접 촬영해 Figma 286:1807·299:2748·299:2699·299:2792와 비교했다. 예약 관리 버튼·안내 문구 색과 위치, Dialog 제목·설명·오류 Alert·버튼 배치, 성공 Alert 위치(Badge 위 / `내 레슨` 위), 0건 빈 상태가 일치한다. 차이는 위 "다르게 구현한 부분" 5·6. 픽셀 비교 도구는 쓰지 않았다.
+
+### 알려진 제한 / 미검증
+
+- Processing 상태(`취소 중…`/`삭제 중…`)는 LocalStorage 쓰기가 동기라 한 프레임 수준이다. 실제 화면 촬영은 하지 않았고, 중복 실행 차단과 2단계 공통 Dialog 검사(처리 중 잠금)로 간접 확인했다.
+- `useNow` 1분 주기 때문에 Dialog 없이 화면만 열어 둔 경우 시작 시각이 지나도 최대 1분간 `예약 취소`가 보일 수 있다. 눌러도 저장소가 INVALID_TRANSITION으로 거절하고 화면을 다시 판정한다.
+- LocalStorage에는 탭 간 원자 트랜잭션이 없어 완전한 동시 쓰기 보장은 하지 않는다(revision 비교로 감지만).
+- 실제 모바일 기기·스크린 리더, production `out/` 정적 서버 브라우저 검사는 하지 않았다. 배포하지 않았다.
+
+Claude 7단계 완료 여부: **완료**. 8단계는 시작하지 않았다.
+
+---
+
+## Claude 8단계 구현 기록 (2026-11-12)
+
+실제 앱 프로젝트 절대 경로: `/Users/jeongyohan/Desktop/Codeit-it-5/sprint-mission6`
+
+읽은 근거: CLAUDE.md, design/steps/08-list-discovery.md, 03-booking-list.md·04-booking-detail.md·07-cancel-delete.md(재사용 규칙), 이 진행 기록, 기존 목록·카드·상세·수정 화면과 `lib/bookings/routes.ts`·`flash.ts`·`use-bookings.ts`. Next.js 16.4.3 문서 `node_modules/next/dist/docs/`의 `use-search-params.md`(정적 페이지는 Suspense 필요)와 `linking-and-navigating.md`(`window.history.pushState/replaceState`가 라우터·`useSearchParams`와 연동)를 확인했다. Figma MCP로 `302:2781`(기본·페이지), `302:2896`(조건 적용, design context 포함), `302:3007`(결과 없음) 스크린샷과 `302:2781` 메타데이터(위치·크기)를 직접 확인했다.
+
+progress 확인: 이번 단계 시작 시 Claude 1~7단계 기록 섹션은 그대로 있었다(Codex가 8단계 항목만 추가). 복원 작업은 필요 없었다. 저장소 `BookingRepository`와 LocalStorage 스키마는 수정하지 않았다.
+
+### 변경 파일
+
+| 파일 | 내용 |
+|---|---|
+| `lib/bookings/discovery.ts` (신규) | 순수 함수: `parseListQuery`(throw 없음, 중복·허용 외 값·음수/소수/지수형/0/앞자리 0/7자리 이상 페이지·80 code point 초과 검색어 무시), `serializeListQuery`(기본값 생략, `q→status→sort→page`, `URLSearchParams`), `isCanonicalListSearch`(알 수 없는 파라미터 포함 여부), `normalizeSearchText`(NFC·trim·연속 공백 축약)·비교용 소문자화, `clampSearchInput`(code point 기준), `applyDiscovery`(검색→상태→정렬→페이지, 동률 id 오름차순, `pageCount=max(1,ceil(n/5))`, 범위 보정 페이지 반환), `describeListQuery`(조건 요약) |
+| `lib/bookings/routes.ts` | `bookingListHref(context?)` 추가. `bookingDetailHref(id, context?)`·`bookingEditHref(id, context?)`가 목록 조건을 **선택적으로** 보존(기본 조건이면 기존과 같은 `?id=`만). 임의 `returnTo`는 받지 않음 |
+| `components/bookings/booking-list-screen.tsx` | `useSearchParams` 기반 탐색 화면으로 재구성(`BookingListFromQuery`/`BookingListLoading`). 검색 필드·상태 칩 그룹·정렬 select·결과 수(`aria-live`)·조건 요약·`초기화`·결과 없음 상태·페이지 nav. 기존 초기화·읽기 실패·진짜 0건·삭제 성공 Alert·CTA 유지 |
+| `app/bookings/page.tsx` | 목록을 `Suspense`로 감쌈(정적 HTML에는 초기화 화면만, 쿼리는 클라이언트에서 읽음) |
+| `components/bookings/booking-card.tsx` | 선택적 `context` prop → 상세 링크에 목록 조건 보존 |
+| `components/bookings/booking-detail-screen.tsx` | 상세 URL에서 허용된 목록 파라미터만 읽어 `목록으로 돌아가기`·Footer `예약 목록으로`·`예약 수정` 링크·삭제 성공 이동에 사용. 직접 진입은 `/bookings` |
+| `components/bookings/booking-edit-screen.tsx` | 같은 방식으로 컨텍스트를 읽어 상세 복귀(뒤로·수정 취소·저장 성공·수정 불가)·목록 복귀에 유지 |
+| `app/globals.css` | 8단계 토큰(`--lc-chip-height`·`--lc-compact-height`·`--lc-compact-action-height`·`--lc-radius-compact`·`--lc-pagination-button-width`)과 `.lc-search*`·`.lc-chip`·`.lc-discovery*`·`.lc-sort`·`.lc-pagination*`·`.lc-button--outline`·`.lc-app--list`. 다른 화면 스타일은 변경 없음 |
+| `tests/booking-list-discovery.spec.ts` (신규) | 8단계 브라우저 검사 15개 |
+| `tests/booking-list.spec.ts` | 3단계 검사 중 "12건·8건 카드가 한 화면에 모두 보임"을 전제로 한 2개를 5개 단위 페이지 기준으로 갱신(의도된 변경), 이미지 로드 검사를 `expect.poll`로 대기(검색 아이콘 추가로 타이밍 의존 제거) |
+
+### 동작 규칙 (구현 결과)
+
+1. **URL 단일 출처**: 조건은 `/bookings?q=…&status=…&sort=…&page=…`에만 있다. 화면 조작은 Next.js와 연동되는 `window.history.pushState/replaceState`로 반영한다. 잘못된 쿼리는 첫 렌더 직후 정규 URL로 `replace`(초기화 중·읽기 실패에도 조건은 URL에 유지), 범위 밖 양의 정수 페이지는 조회 성공 뒤 마지막 유효 페이지로 `replace`.
+2. **검색**: 입력은 즉시 표시, 결과·URL은 입력이 멈춘 뒤 300ms에 `replace`. Enter(IME 조합 중 제외)는 즉시. ×(`검색어 지우기`, 빈 값이면 숨김)·Escape는 검색어만 즉시 지우고 `replace`, 빈 상태 Escape는 무동작. 정규화 결과가 빈 값이면 `q` 제거. 입력은 80 code point로 자른다(UTF-16 `maxLength`는 쓰지 않음).
+3. **칩·정렬·초기화·페이지**: `push`. 검색·상태·정렬이 바뀌면 `page=1`, 목록 viewport 맨 위. 칩·정렬을 바꿀 때 300ms 대기 중인 검색어도 함께 반영한다. `초기화`(텍스트 버튼)와 결과 없음의 `조건 초기화`는 `/bookings`로 `push`, 기본 상태면 `초기화`를 숨긴다.
+4. **결과 수·상태 구분**: 검색어·상태 필터가 없으면 `예약 N건`(저장 전체 수), 있으면 `검색 결과 N건`(조건 통과 전체 수). 저장 예약 0건은 조건과 무관하게 3단계 빈 상태·`예약 0건`, 조건 결과 0건은 `검색 결과가 없어요`. 읽기 실패는 결과 0건으로 표시하지 않고 컨트롤을 비활성화한다.
+5. **자동 보정**: 시간 경과(1분 `useNow`)·다른 탭 변경·삭제로 결과가 줄어 현재 페이지가 사라지면 같은 순서로 다시 계산해 마지막 유효 페이지로 `replace`.
+6. **상세·수정 복귀**: 카드 링크 `/bookings/detail?id={UUID}&q=…&status=…&sort=…&page=…`(현재 보정된 페이지). 상세→수정→상세, 취소 후 상세 갱신에도 URL 컨텍스트 유지. 삭제 성공은 7단계 일회성 Alert를 유지한 채 원래 조건 목록으로 이동하고, 비거나 사라진 페이지는 목록이 보정한다. 상세 URL의 허용되지 않은 값·`returnTo` 등은 무시.
+7. **스크롤 복원**: sessionStorage 키 `lessonconnect:bookings:list-scroll:{정규 쿼리}`(기본 조건은 `…list-scroll:`)로 조건 조합별 저장. 조회 성공 직후 한 번만 같은 키의 위치를 복원(브라우저 뒤로·`목록으로 돌아가기` 모두), 그 뒤 조건·페이지 변경은 맨 위. 읽을 수 없으면 0. 예약 데이터 키와 분리. 3단계의 단일 키 `lessonconnect:bookings:list-scroll`은 더 이상 쓰지 않는다.
+8. **라우터 반영 지연 처리**: Next 라우터가 `useSearchParams`를 갱신하기 전에 이어지는 조작(× 직후 입력·칩 직후 정렬 등)이 늦게 도착한 중간 URL에 덮이지 않도록, 화면이 쓴 최신 조건을 기준으로 계산하고 자체 변경의 반영은 입력값을 바꾸지 않는다. 브라우저 뒤로/앞으로(popstate)만 외부 변경으로 보고 입력값을 URL에 맞춘다. (부하 상태 전체 검사에서 재현된 경쟁 조건을 고친 것)
+
+### 명세·Figma와 다르게 구현한 부분 (Codex 확인 요청)
+
+1. **상태 표시줄 제외**: 이전 단계와 같이 앱에는 상태 표시줄이 없어 모든 요소가 Figma보다 32px 위에 있고, 그만큼 목록 viewport가 238px보다 크다(390×844 실측: 페이지 영역이 있으면 280px, 없으면 344px). 그 외 간격(CTA→레이블 16, 레이블→검색 6, 검색→칩 12, 칩→결과 행 10, 결과 행→요약 13, 요약→목록 10, 페이지 영역 상 7·하 13)은 Figma 메타데이터를 따랐다.
+2. **검색·정렬 필드**: 공통 `Input`/`Select`는 레이블에 `(필수)/(선택)`을 붙이고 아이콘·지우기 버튼 자리가 없어 그대로 쓰면 Figma(`예약 검색`)와 달라진다. 컴포넌트를 바꾸지 않고 같은 CSS(`lc-field__label`·`lc-control`·`lc-select`)를 재사용한 네이티브 `<input type=search>`·`<select>`로 만들었다. 검색 border는 Figma대로 중립 `--lc-border`, 정렬 레이블은 숨김 `정렬`.
+3. **돋보기 아이콘**: Figma는 텍스트 글리프 `⌕`다. 기존 자산 `/assets/ui/nav-search.svg`를 18px 장식 이미지(`alt=""`)로 썼다. ×는 Figma와 같은 텍스트 글리프.
+4. **페이지 버튼 이름**: 보이는 문구는 Figma `이전`/`다음`, 접근 가능한 이름은 명세 `이전 페이지`/`다음 페이지`. 현재 `1 / 3` 앞에 숨김 `현재 페이지`. 누른 버튼이 끝에 닿아 비활성되면 포커스를 반대쪽 버튼으로 옮긴다. 비활성은 Figma처럼 surface 배경·muted 글자(투명도 없음).
+5. **조건 요약 문구**: 결과 없음 프레임은 `날짜순`, 기본 프레임은 `레슨 날짜순`이라 정렬 select와 같은 `레슨 날짜순`으로 통일했다. 검색어만 있고 상태가 전체이면 `“기타” · 전체 · 레슨 날짜순`(Figma에 없는 조합). 한 줄 말줄임, 앞에 숨김 `적용 조건:`.
+6. **URL 경계값 해석**: 80 code point를 넘는 `q`는 자르지 않고 무시(제거)한다. 깨진 퍼센트 인코딩(`%E0%A4%A`)은 브라우저 `URLSearchParams`가 대체 문자로 해석해 일반 검색어로 처리된다(오류·리다이렉트 없음). 페이지는 1~999999만 허용.
+7. **×·Escape**: 명세에 방식이 없어 검색 입력과 같은 `replace`로 처리했다.
+8. **칩 터치 영역**: 시각 36px(Figma) + `::after`로 위아래 확장해 44px. 칩 폭은 Figma 60px 대신 남는 폭을 5등분(390에서 약 60px, 320에서도 한 줄).
+9. **결과 없음 상태**: Figma처럼 아이콘 없이 제목·설명·200px `조건 초기화`(흰 배경·중립 테두리 `lc-button--outline`).
+
+### 실행한 검증 명령과 결과
+
+| 명령 | 결과 |
+|---|---|
+| `npm run typecheck` | 통과 |
+| `npm run build` | 통과. 정적 라우트 `/`, `/_not-found`, `/bookings`, `/bookings/detail`, `/bookings/edit`, `/bookings/new`. `out/bookings.html`에 초기화 화면 포함(서버 기능 추가 없음) |
+| `npm run dev -- --port 3100` 후 `PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright npm test` | **121/121 통과**. 기존 106 + 8단계 15 |
+| 8단계 검사 `--repeat-each=3` | 45/45 통과(경쟁 조건 수정 후 안정성 확인) |
+
+8단계 검사 결과 (`tests/booking-list-discovery.spec.ts`, 실제 브라우저 LocalStorage — 실제 동작 검증):
+
+- **검색 대상·정규화**: 강사·악기·스튜디오·방·`스튜디오 + 방`(영문 대소문자 무시), 앞뒤·연속 공백, NFD 입력의 NFC 비교 일치. 메모·ID·표시용 `선생님`은 검색되지 않음.
+- **필터·정렬 순서**: 예정·진행 중·종료·취소됨이 파생 상태로 걸러짐(취소는 날짜와 무관하게 취소됨). 날짜순은 취소 예약도 레슨 날짜 기준, 같은 시각은 id 오름차순. 최근 생성순도 같은 createdAt은 id 오름차순. 검색+상태+정렬 조합과 요약 `“동률” · 예정 · 최근 생성순`.
+- **페이지**: 12건 → 5개씩 `1 / 3`, 첫 페이지 이전 비활성, `다음` 2회 → `page=3`·2건·다음 비활성·이전에 포커스, history 2 증가(push). `page=9` 직접 접속 → `page=3`으로 replace. 결과 1페이지면 nav 없음.
+- **조건 변경·뒤로/앞으로**: `page=2`에서 스크롤 후 `예정` → `?status=upcoming`, 스크롤 0. 정렬 변경 후 뒤로 2회 → 칩·정렬·`2 / 3` 복원, 앞으로 → 다시 복원. `초기화` → `/bookings`, 입력·정렬·칩 기본, 초기화 버튼 숨김, 뒤로 → 이전 검색어 복원.
+- **검색 입력**: 입력 즉시 표시·URL은 그대로 → 멈춘 뒤 `?q=기타`(page 제거)·history 길이 동일(replace). ×(포커스 유지)·Enter·Escape·빈 Escape·공백만 입력·이모지 85개 → 80 code point.
+- **잘못된 쿼리 12종**: 허용 외 enum·알 수 없는 파라미터·`page=-1/1.5/1e2/0/01/20자리`·중복 status·기본값 명시·81자 q → `/bookings`, 순서·공백 정규화 → 정규 URL. 깨진 인코딩도 오류 없이 `검색 결과 0건`. 콘솔 오류 없음.
+- **0건 구분**: 저장 0건 + `q` → `아직 예약한 레슨이 없어요`·`예약 0건`. 저장 1건 + 결과 0 → `검색 결과가 없어요`, nav 없음, `조건 초기화` → `/bookings`.
+- **초기화 중·읽기 실패**: 서버 HTML은 로딩 상태(`검색 결과` 없음). 손상 저장값 → 오류 Alert, 검색·칩·정렬 비활성, 입력값·URL 유지, 결과 없음 미표시. 복구 후 `다시 시도` → URL 조건 적용(`검색 결과 1건`).
+- **상세 복귀**: `?q=강사&sort=created-desc&page=2`에서 마지막 카드 href에 조건 보존. 브라우저 뒤로·`목록으로 돌아가기` 모두 같은 URL과 같은 스크롤 위치. 1페이지(다른 키)는 스크롤 0. 상세 URL의 `status=bogus`·`returnTo` 무시 → `/bookings?sort=created-desc`. 직접 상세 진입 → `/bookings`.
+- **수정·취소**: 상세→`예약 수정`(href에 조건)→`예약 상세로 돌아가기` → 같은 컨텍스트. 취소 후에도 URL 유지, `예약 목록으로` → 원래 조건(예정 필터라 결과 없음).
+- **삭제 후 보정**: 종료 6건 `page=2`의 1건 삭제 → `/bookings?status=ended`(replace), 성공 Alert 1회·포커스, `검색 결과 5건`, nav 없음. 검색 결과 1건 삭제 → 같은 조건·결과 없음, 새로고침 시 Alert 없음.
+- **다른 탭 변경**: `page=2`에서 다른 탭이 1건 줄임 → `/bookings`로 replace(history 길이 동일).
+- **데이터 분리**: 칩·검색·페이지·스크롤 후 LocalStorage 원시값 그대로, 키는 `lessonconnect:bookings:v1` 하나.
+- **390×844 배치·접근성**: 레이블 `예약 검색`, placeholder, `type=search`, `inputmode=search`, 결과 수 `aria-live=polite`, 정렬 옵션 2개. 칩 5개 한 줄·370px 안·터치 44px 이상. 검색→칩→결과 행→요약→목록→페이지→내비 순서로 겹침 없음, 내비는 844 안·목록 스크롤 중 고정, 페이지 가로/세로 넘침 없음. 칩 Enter·Space 선택, 칩 다음 Tab이 정렬 select.
+- **320 폭**: 긴 검색어 조건 요약이 한 줄로 줄고 가로 넘침 없음(그리드 열 `minmax(0,1fr)`로 수정).
+- **회귀**: 홈·생성·수정·상세·취소/삭제·목록·공통 UI 기존 106개 통과(목록 2개는 의도된 갱신). 콘솔 오류 없음.
+
+디자인 확인(시각): 390×844로 기본(12건, 1/3)·조건 적용(`기타`·예정·최근 생성순)·결과 없음(`재즈`·취소됨)을 직접 촬영해 Figma 302:2781·302:2896·302:3007과 비교했다. 검색 필드·칩 선택 색·결과 행·요약/초기화·카드·페이지 버튼(이전 비활성 surface, 다음 흰 배경 테두리)·결과 없음 배치가 일치한다. 차이는 위 "다르게 구현한 부분". 픽셀 비교 도구는 쓰지 않았다.
+
+### 알려진 제한 / 미검증
+
+- 상단(헤더~조건 요약)이 고정 영역이라 세로가 짧은 화면에서는 목록 viewport가 좁아진다(390×667 실측: 페이지 영역이 있으면 약 103px, 없으면 167px). 명세 기준 844 높이에서는 문제없다. 짧은 화면에서 상단을 함께 스크롤할지는 Codex 판단이 필요하다.
+- 시간 경과에 따른 상태 이동(예정→진행 중→종료)은 `useNow` 1분 주기로 다시 계산된다(최대 1분 지연). `page.clock`으로 별도 검사하지는 않았고, 같은 재계산 경로를 다른 탭 변경·삭제 검사로 확인했다.
+- 300ms 디바운스는 "즉시 반영되지 않고 멈춘 뒤 반영됨"만 확인했고 정확한 시간 측정은 하지 않았다. `aria-live` 발표 빈도는 실제 스크린 리더로 확인하지 않았다.
+- 같은 세션에서 같은 조건 목록으로 다시 들어오면(하단 내비 `예약` 등) 마지막 저장 위치가 복원된다(3단계와 같은 방식, 조건별로만 분리).
+- 실제 모바일 기기·스크린 리더, production `out/` 정적 서버 브라우저 검사는 하지 않았다. 배포하지 않았다.
+
+Claude 8단계 완료 여부: **완료**. 9단계는 시작하지 않았다.

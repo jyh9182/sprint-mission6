@@ -177,7 +177,8 @@ test('390×844 긴 텍스트·많은 카드: 줄임, 겹침 없음, 마지막 �
     booking({ date: seoulDate(Date.now() + (i + 1) * DAY), startTime: '19:00', ...(i === 0 ? { instructorName: longName, roomName: longRoom, instrumentLabel: '일렉트릭 기타와 어쿠스틱 기타 병행 레슨' } : {}) }),
   );
   await openWith(page, store(list));
-  await expect(cards(page)).toHaveCount(12);
+  // 8단계부터 5개 단위 페이지. 건수는 전체(12건), 카드는 현재 페이지 5개
+  await expect(cards(page)).toHaveCount(5);
   await expect(page.getByText('예약 12건', { exact: true })).toBeVisible();
 
   // 페이지 자체는 가로·세로로 넘치지 않고 목록 영역만 스크롤
@@ -203,8 +204,13 @@ test('390×844 긴 텍스트·많은 카드: 줄임, 겹침 없음, 마지막 �
   const nav = await page.locator('.lc-bottom-nav').boundingBox();
   const last = await cards(page).last().boundingBox();
   const note = await page.getByText('예약은 이 브라우저에만 저장돼요.').boundingBox();
-  expect(last!.y + last!.height).toBeLessThanOrEqual(nav!.y);
-  expect(note!.y + note!.height).toBeLessThanOrEqual(nav!.y);
+  // 페이지 컨트롤은 목록 viewport 아래·하단 내비 위에 있다
+  const pager = await page.getByRole('navigation', { name: '예약 목록 페이지' }).boundingBox();
+  const vp = await viewport(page).boundingBox();
+  expect(last!.y + last!.height).toBeLessThanOrEqual(pager!.y);
+  expect(note!.y + note!.height).toBeLessThanOrEqual(pager!.y);
+  expect(vp!.y + vp!.height).toBeLessThanOrEqual(pager!.y + 0.5);
+  expect(pager!.y + pager!.height).toBeLessThanOrEqual(nav!.y + 0.5);
   expect(nav!.y + nav!.height).toBeLessThanOrEqual(844 + 0.5);
   await page.screenshot({ path: 'test-results/bookings-dense-390-bottom.png' });
   await viewport(page).evaluate((el) => { el.scrollTop = 0; });
@@ -215,9 +221,10 @@ test('390×844 긴 텍스트·많은 카드: 줄임, 겹침 없음, 마지막 �
 test('카드·CTA 키보드 조작, 포커스 링, 상세 경로, 뒤로 오면 스크롤 복원', async ({ page }) => {
   const list = Array.from({ length: 8 }, (_, i) => booking({ date: seoulDate(Date.now() + (i + 1) * DAY), startTime: '18:00' }));
   await openWith(page, store(list));
-  await expect(cards(page)).toHaveCount(8);
+  await expect(cards(page)).toHaveCount(5); // 8단계: 1페이지 5개
 
-  await page.getByRole('link', { name: '새 레슨 예약' }).focus();
+  // 8단계부터 CTA와 카드 사이에 검색·상태·정렬 컨트롤이 있다. 정렬 다음 Tab이 첫 카드다.
+  await page.getByRole('combobox', { name: '정렬' }).focus();
   await page.keyboard.press('Tab');
   const firstCard = cards(page).first();
   await expect(firstCard).toBeFocused();
@@ -225,14 +232,14 @@ test('카드·CTA 키보드 조작, 포커스 링, 상세 경로, 뒤로 오면 
 
   await viewport(page).evaluate((el) => { el.scrollTop = 500; });
   await page.waitForTimeout(100);
-  const target = cards(page).nth(5);
+  const target = cards(page).nth(4);
   const href = await target.getAttribute('href');
-  expect(href).toBe(`/bookings/detail?id=${list[5].id}`);
+  expect(href).toBe(`/bookings/detail?id=${list[4].id}`);
   await target.focus();
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(new URL(href!, base).toString());
   await page.goBack();
-  await expect(cards(page)).toHaveCount(8);
+  await expect(cards(page)).toHaveCount(5);
   await expect.poll(() => viewport(page).evaluate((el) => el.scrollTop)).toBeGreaterThan(400);
 });
 
@@ -265,7 +272,8 @@ for (const width of [320, 390]) {
     await openWith(page, null, width, 844);
     await expect(cards(page)).toHaveCount(1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    expect(await page.locator('img').evaluateAll((imgs) => imgs.every((i) => (i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth > 0 && i.getAttribute('alt') === ''))).toBe(true);
+    // 8단계 검색 아이콘이 추가돼 이미지 로드 완료를 기다린 뒤 검사한다
+    await expect.poll(() => page.locator('img').evaluateAll((imgs) => imgs.every((i) => (i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth > 0 && i.getAttribute('alt') === ''))).toBe(true);
     await page.screenshot({ path: `test-results/bookings-${width}.png` });
     expect(failures).toEqual([]);
   });

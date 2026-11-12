@@ -52,10 +52,16 @@ export function useBookingDetail(id: string | null, repository: BookingRepositor
       if (event.key === null || event.key === BOOKING_STORAGE_KEY) refresh();
     };
     window.addEventListener('storage', onStorage);
+    // 브라우저 뒤로가기의 페이지 캐시(bfcache)로 돌아와도 삭제·취소된 예약을 그대로 조작하지 않게 다시 읽는다.
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) refresh();
+    };
+    window.addEventListener('pageshow', onPageShow);
     return () => {
       activeRef.current = false;
       unsubscribe();
       window.removeEventListener('storage', onStorage);
+      window.removeEventListener('pageshow', onPageShow);
     };
   }, [repository, id]);
 
@@ -69,5 +75,12 @@ export function useBookingDetail(id: string | null, repository: BookingRepositor
     });
   }, [repository, id]);
 
-  return { state, retry, retrying };
+  /** 액션 결과를 확인하기 위해 최신 저장소를 다시 읽고 화면에 반영한다. 반영한 상태를 돌려준다. */
+  const reload = useCallback(async () => {
+    const next = await loadBookingDetail(repository, id);
+    if (activeRef.current) setState(next);
+    return next;
+  }, [repository, id]);
+
+  return { state, retry, retrying, reload, repository };
 }

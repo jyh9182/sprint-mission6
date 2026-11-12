@@ -83,6 +83,17 @@ async function expectNoBookingActions(page: Page) {
   }
 }
 
+/** 종료·취소됨: `예약 기록 삭제`와 복구 불가 안내만, 수정·취소 없음 */
+async function expectDeleteOnly(page: Page) {
+  const manage = page.getByRole('region', { name: '예약 관리' });
+  await expect(manage.getByRole('button', { name: '예약 기록 삭제', exact: true })).toBeEnabled();
+  await expect(manage).toContainText('삭제한 기록은 복구할 수 없어요.');
+  for (const name of ['예약 수정', '예약 취소']) {
+    await expect(page.getByRole('button', { name, exact: true })).toHaveCount(0);
+    await expect(page.getByRole('link', { name, exact: true })).toHaveCount(0);
+  }
+}
+
 async function expectNoHorizontalOverflow(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
 }
@@ -120,7 +131,7 @@ test('목록 카드 → 상세: 시드 예약을 snapshot·서울 시각으로 �
   expect(failures).toEqual([]);
 });
 
-test('예정 예약: 예약 수정 Primary만 연결, 취소는 준비 중 안내, 쓰기 없음', async ({ page }) => {
+test('예정 예약: Footer 예약 수정 + 관리 영역 예약 취소만, 삭제 없음, 쓰기 없음', async ({ page }) => {
   const failures = watchErrors(page);
   const b = upcoming({ memo: '퇴근 후 레슨을 희망해요.' });
   const raw = store([b]);
@@ -128,21 +139,20 @@ test('예정 예약: 예약 수정 Primary만 연결, 취소는 준비 중 안�
   await expect(page.locator('.lc-detail-memo__text')).toHaveText('퇴근 후 레슨을 희망해요.');
   await expect(page.locator('.lc-detail-heading__description')).toHaveText('예약 내용을 확인하고 변경할 수 있어요.');
   const manage = page.getByRole('region', { name: '예약 관리' });
-  await expect(manage).toContainText('예약 취소는 준비 중이에요');
-  for (const name of ['예약 취소', '예약 기록 삭제']) {
-    await expect(page.getByRole('button', { name, exact: true })).toHaveCount(0);
-    await expect(page.getByRole('link', { name, exact: true })).toHaveCount(0);
-  }
+  // 7단계: 시작 전 예정에는 `예약 취소`만, 삭제는 먼저 취소해야 하므로 없다
+  await expect(manage.getByRole('button', { name: '예약 취소', exact: true })).toBeEnabled();
+  await expect(manage).toContainText('레슨 시작 전까지 취소할 수 있어요.');
+  await expect(page.getByRole('button', { name: '예약 기록 삭제', exact: true })).toHaveCount(0);
   // 6단계: 시작 전 예정 예약에만 Footer Primary `예약 수정`
   await expect(page.locator('.lc-detail-footer').getByRole('link', { name: '예약 수정', exact: true })).toHaveAttribute('href', `/bookings/edit?id=${b.id}`);
-  // 페이지의 조작 요소는 헤더 뒤로가기와 예약 수정 링크뿐
+  // 페이지의 조작 요소는 헤더 뒤로가기·예약 취소·예약 수정 링크뿐
   // (개발 서버의 Next.js 오버레이 shadow DOM 요소를 빼기 위해 화면 루트로 한정)
-  await expect(page.locator('.lc-app').locator('button:not([disabled]), a[href]')).toHaveCount(2);
+  await expect(page.locator('.lc-app').locator('button:not([disabled]), a[href]')).toHaveCount(3);
   expect(await rawStore(page)).toBe(raw);
   expect(failures).toEqual([]);
 });
 
-test('상태별 표시: 진행 중은 관리 영역 없음, 종료·취소됨은 삭제 준비 중 안내', async ({ page }) => {
+test('상태별 표시: 진행 중은 관리 영역 없음, 종료·취소됨은 예약 기록 삭제만', async ({ page }) => {
   const now = Date.now();
   const inProgress = booking({ date: seoulDate(now), startTime: `${pad(seoulHour(now))}:00` });
   const ended = booking({ date: seoulDate(now - DAY), startTime: '19:00' });
@@ -157,15 +167,13 @@ test('상태별 표시: 진행 중은 관리 영역 없음, 종료·취소됨은
 
   await page.goto(detailUrl(ended.id));
   await expect(page.locator('.lc-detail-heading .lc-badge')).toHaveText('종료');
-  await expect(page.getByRole('region', { name: '예약 관리' })).toContainText('예약 기록 삭제는 준비 중이에요');
-  await expectNoBookingActions(page);
+  await expectDeleteOnly(page);
 
   await page.goto(detailUrl(cancelled.id));
   await expect(page.locator('.lc-detail-heading .lc-badge')).toHaveText('취소됨');
   await expect(page.getByText('이 예약은 취소되었어요.')).toBeVisible();
   await expect(infoValue(page, '시간')).toHaveText('20:00–21:00');
-  await expect(page.getByRole('region', { name: '예약 관리' })).toContainText('예약 기록 삭제는 준비 중이에요');
-  await expectNoBookingActions(page);
+  await expectDeleteOnly(page);
   await expect(footerLink(page)).toBeVisible();
   expect(await rawStore(page)).toBe(raw);
 });
@@ -204,7 +212,7 @@ test('긴 메모 500자·긴 값: 자르지 않고 줄바꿈 유지, 본문만 �
   await viewport.evaluate((el) => { el.scrollTop = el.scrollHeight; });
   await page.waitForTimeout(100);
   expect((await footer.boundingBox())!.y).toBe(footerTop); // Footer 고정
-  const lastAlert = page.getByRole('region', { name: '예약 관리' }).locator('.lc-alert');
+  const lastAlert = page.getByRole('region', { name: '예약 관리' }).locator('.lc-detail-manage__hint');
   const box = (await lastAlert.boundingBox())!;
   expect(box.y + box.height).toBeLessThanOrEqual(footerTop);
   await expect(lastAlert).toBeInViewport({ ratio: 1 });
@@ -294,7 +302,7 @@ test('다른 탭에서 삭제되면 없는 ID 화면으로 바뀜', async ({ pag
   await expect(page.getByRole('heading', { name: '예약을 찾을 수 없어요' })).toBeVisible();
 });
 
-test('키보드: 뒤로가기 → 목록 링크 순서, 포커스 링, Enter로 목록 이동', async ({ page }) => {
+test('키보드: 뒤로가기 → 예약 기록 삭제 → 목록 링크 순서, 포커스 링, Enter로 목록 이동', async ({ page }) => {
   // 예정 예약의 Footer는 6단계부터 `예약 수정`이므로 목록 링크가 있는 종료 예약으로 검사한다.
   const b = booking({ date: seoulDate(Date.now() - 3 * DAY), startTime: '19:00' });
   await openDetail(page, store([b]), b.id);
@@ -304,6 +312,8 @@ test('키보드: 뒤로가기 → 목록 링크 순서, 포커스 링, Enter로 
   await page.keyboard.press('Tab');
   await expect(back).toBeFocused();
   expect((await back.boundingBox())!.width).toBe(44);
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: '예약 기록 삭제', exact: true })).toBeFocused(); // 7단계 관리 액션
   await page.keyboard.press('Tab');
   const link = footerLink(page);
   await expect(link).toBeFocused();

@@ -13,7 +13,8 @@ import { bookingToFormValues, EDIT_MESSAGES, mapSaveError, type BookingFormSubmi
 import { formatLessonDate, formatLessonTimeRange, formatSpace, instructorDisplayName } from '@/lib/bookings/format';
 import { ERROR_MESSAGES } from '@/lib/bookings/messages';
 import { getBookingRepository } from '@/lib/bookings/repository';
-import { BOOKING_ID_PARAM, bookingDetailHref, BOOKINGS_HREF } from '@/lib/bookings/routes';
+import { parseListQuery, serializeListQuery, type ListQuery } from '@/lib/bookings/discovery';
+import { BOOKING_ID_PARAM, bookingDetailHref, bookingListHref } from '@/lib/bookings/routes';
 import { getBookingPhase } from '@/lib/bookings/time';
 import type { BookingInput, LessonBooking, StoreError } from '@/lib/bookings/types';
 import { loadBookingDetail } from '@/lib/bookings/use-booking-detail';
@@ -36,8 +37,12 @@ const TITLE = '예약 수정';
 
 /** URL 쿼리에서 ID를 읽는다. 정적 export에서는 useSearchParams가 클라이언트에서만 값을 가지므로 Suspense 안에서 쓴다. */
 export function BookingEditFromQuery() {
-  const id = useSearchParams().get(BOOKING_ID_PARAM);
-  return <BookingEditScreen key={id ?? ''} id={id} />;
+  const params = useSearchParams();
+  const id = params.get(BOOKING_ID_PARAM);
+  // 상세 → 수정 → 상세를 거쳐도 목록 조건을 유지한다(허용된 q/status/sort/page만).
+  const contextKey = serializeListQuery(parseListQuery(params));
+  const context = React.useMemo(() => parseListQuery(new URLSearchParams(contextKey)), [contextKey]);
+  return <BookingEditScreen key={id ?? ''} id={id} context={context} />;
 }
 
 /** 정적 HTML·하이드레이션 전에 보이는 초기화 화면(Suspense fallback). 저장소·URL을 읽지 않는다. */
@@ -60,7 +65,7 @@ async function loadEdit(id: string | null): Promise<EditState> {
   return result;
 }
 
-function BookingEditScreen({ id }: { id: string | null }) {
+function BookingEditScreen({ id, context }: { id: string | null; context: ListQuery }) {
   const router = useRouter();
   const [state, setState] = React.useState<EditState>({ status: 'initializing' });
   const [retrying, setRetrying] = React.useState(false);
@@ -85,11 +90,11 @@ function BookingEditScreen({ id }: { id: string | null }) {
   }, [id]);
 
   if (state.status === 'ready' && id) {
-    return <BookingEditReady id={id} booking={state.booking} revision={state.revision} onStateChange={setState} />;
+    return <BookingEditReady id={id} context={context} booking={state.booking} revision={state.revision} onStateChange={setState} />;
   }
 
-  const toDetail = () => router.push(id ? bookingDetailHref(id) : BOOKINGS_HREF);
-  const toList = () => router.push(BOOKINGS_HREF);
+  const toDetail = () => router.push(id ? bookingDetailHref(id, context) : bookingListHref(context));
+  const toList = () => router.push(bookingListHref(context));
 
   return (
     <div className="lc-app">
@@ -164,11 +169,13 @@ type Conflict = { booking: LessonBooking; revision: number };
 
 function BookingEditReady({
   id,
+  context,
   booking,
   revision,
   onStateChange,
 }: {
   id: string;
+  context: ListQuery;
   booking: LessonBooking;
   revision: number;
   onStateChange: (state: EditState) => void;
@@ -193,7 +200,7 @@ function BookingEditReady({
 
   const openLeaveDialog = React.useCallback(() => setLeaveOpen(true), []);
   const { allowLeave } = useLeaveGuard({ dirty: formState.dirty, onAttemptLeave: openLeaveDialog });
-  const detailHref = bookingDetailHref(id);
+  const detailHref = bookingDetailHref(id, context);
 
   /** 폼을 숨기는 상태(없는 ID·수정 불가)로 바꾼다. draft는 버리므로 이탈 가드를 끈다. */
   const switchState = React.useCallback(

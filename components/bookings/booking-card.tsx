@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { BOOKING_PHASE_LABELS, StatusBadge } from '@/components/ui/status-badge';
 import { formatInstrument, formatLessonDate, formatLessonTimeRange, formatSpace, instructorDisplayName } from '@/lib/bookings/format';
+import type { ListQuery } from '@/lib/bookings/discovery';
 import { bookingDetailHref } from '@/lib/bookings/routes';
 import type { BookingPhase, LessonBooking } from '@/lib/bookings/types';
 
@@ -8,8 +9,9 @@ import type { BookingPhase, LessonBooking } from '@/lib/bookings/types';
  * 예약 목록 카드. Figma "14 Booking List / Card / LessonBooking"(282:1584).
  * 카드 전체가 상세 링크 하나이며 카드 안에 취소·삭제 동작을 두지 않는다.
  * 강사·공간·악기는 화면에서 최대 2줄로 줄이고, 링크의 접근 가능한 이름에는 전체 문자열을 담는다.
+ * `context`는 현재 목록 조건(8단계). 상세 URL에 보존해 `목록으로 돌아가기`가 같은 조건으로 돌아오게 한다.
  */
-export function BookingCard({ booking, phase, onNavigate }: { booking: LessonBooking; phase: BookingPhase; onNavigate?: () => void }) {
+export function BookingCard({ booking, phase, context, onNavigate }: { booking: LessonBooking; phase: BookingPhase; context?: ListQuery; onNavigate?: () => void }) {
   const instructor = instructorDisplayName(booking.snapshot.instructorName);
   const date = formatLessonDate(booking.date);
   const time = formatLessonTimeRange(booking.startTime, booking.snapshot.durationMinutes);
@@ -18,7 +20,7 @@ export function BookingCard({ booking, phase, onNavigate }: { booking: LessonBoo
   const label = `${instructor}, ${date} ${time}, ${BOOKING_PHASE_LABELS[phase]}, ${instrument}, ${space}, 예약 상세 보기`;
 
   return (
-    <Link href={bookingDetailHref(booking.id)} className="lc-booking-card lc-focus-ring" aria-label={label} onClick={onNavigate}>
+    <Link href={bookingDetailHref(booking.id, context)} className="lc-booking-card lc-focus-ring" aria-label={label} onClick={onNavigate}>
       <span className="lc-booking-card__top">
         <span className="lc-booking-card__instructor lc-clamp-2">{instructor}</span>
         <StatusBadge phase={phase} className="lc-booking-card__badge" />

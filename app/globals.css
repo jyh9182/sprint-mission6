@@ -117,6 +117,13 @@ dialog.lc-dialog::backdrop{background:var(--lc-backdrop);backdrop-filter:none}
 .lc-detail-manage{display:flex;flex-direction:column;gap:var(--lc-space-2)}
 .lc-detail-manage__title{font-size:16px;line-height:24px;font-weight:700;letter-spacing:-.16px}
 .lc-detail-manage .lc-alert{max-width:none}
+/* 7단계 예약 관리 액션 아래 안내 — Figma 286:1807(취소, muted) · 286:1993(삭제 복구 불가, error) */
+.lc-detail-manage__hint{font-size:12px;line-height:18px;font-weight:500;color:var(--lc-muted)}
+.lc-detail-manage__hint--danger{color:var(--lc-error)}
+.lc-detail-heading__title:focus{outline:none}
+/* 7단계 삭제 완료 목록 성공 Alert — Figma 299:2792 */
+.lc-list-flash{margin:var(--lc-space-4) 0 var(--lc-space-6);outline:none}
+.lc-list-flash .lc-alert{max-width:none}
 .lc-detail-state{margin-top:148px}
 .lc-detail-state--error{margin-top:72px}
 .lc-detail-wide{width:100%}
@@ -144,3 +151,35 @@ dialog.lc-dialog::backdrop{background:var(--lc-backdrop);backdrop-filter:none}
 .lc-form-check__input:focus-visible{outline:var(--lc-stroke-focus) solid var(--lc-focus);outline-offset:2px}
 .lc-form-check__input[aria-invalid=true]{outline:var(--lc-stroke) solid var(--lc-error);outline-offset:1px}
 .lc-form-check__input[aria-invalid=true]:focus-visible{outline:var(--lc-stroke-focus) solid var(--lc-focus);outline-offset:2px}
+/* 8단계 예약 목록 탐색 — Figma 302:2781(기본·페이지) · 302:2896(조건 적용) · 302:3007(결과 없음), Status Chip 302:2777/302:2779 */
+:root{--lc-chip-height:36px;--lc-compact-height:40px;--lc-compact-action-height:44px;--lc-radius-compact:12px;--lc-pagination-button-width:84px}
+.lc-app--list{grid-template-rows:auto minmax(0,1fr) auto auto;grid-template-columns:minmax(0,1fr)}
+.lc-discovery{display:flex;flex-direction:column;margin-top:var(--lc-space-4)}
+.lc-search{display:flex;flex-direction:column;gap:6px}
+.lc-search__box{position:relative}
+.lc-search__icon{position:absolute;left:var(--lc-space-4);top:50%;width:18px;height:18px;transform:translateY(-50%);pointer-events:none;opacity:.8}
+.lc-search__input{border-color:var(--lc-border);padding-left:47px;padding-right:var(--lc-compact-action-height)}
+.lc-search__input::-webkit-search-cancel-button,.lc-search__input::-webkit-search-decoration{appearance:none}
+.lc-search__clear{position:absolute;right:var(--lc-space-1);top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:var(--lc-compact-action-height);height:var(--lc-compact-action-height);border:0;border-radius:var(--lc-radius-control);background:none;color:var(--lc-muted);font-size:18px;line-height:24px}
+.lc-chips{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--lc-space-3);margin-top:var(--lc-space-3)}
+.lc-chip{position:relative;height:var(--lc-chip-height);padding:0;border:var(--lc-stroke) solid var(--lc-border);border-radius:var(--lc-radius-full);background:var(--lc-white);color:var(--lc-ink);font-size:12px;line-height:18px;font-weight:500;white-space:nowrap}
+/* 시각 높이 36px, 터치 영역은 위아래로 넓혀 44px 이상 */
+.lc-chip::after{content:'';position:absolute;inset:calc((var(--lc-chip-height) - var(--lc-hit-target)) / 2) calc(var(--lc-space-3) / -2)}
+.lc-chip[aria-pressed=true]{border-color:var(--lc-ink);background:var(--lc-ink);color:var(--lc-white)}
+.lc-chip:disabled{opacity:var(--lc-disabled-opacity);cursor:not-allowed}
+.lc-discovery__row{display:flex;align-items:center;justify-content:space-between;gap:var(--lc-space-3);margin-top:10px}
+.lc-discovery__count{min-width:0;font-size:14px;line-height:21px;font-weight:500;color:var(--lc-ink)}
+.lc-sort{flex:0 0 150px}
+.lc-sort .lc-control.lc-sort__control{min-height:var(--lc-compact-height);height:var(--lc-compact-height);padding:0 calc(var(--lc-space-3) + 16px + var(--lc-space-2)) 0 11px;border-color:var(--lc-border);border-radius:var(--lc-radius-compact);font-size:12px;line-height:18px;font-weight:500}
+.lc-discovery__summary{display:flex;align-items:center;justify-content:space-between;gap:var(--lc-space-3);min-height:18px;margin-top:13px}
+.lc-discovery__conditions{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:12px;line-height:18px;color:var(--lc-muted)}
+.lc-discovery__reset{position:relative;flex-shrink:0;padding:0;border:0;background:none;color:var(--lc-ink);font-size:12px;line-height:18px;font-weight:500}
+.lc-discovery__reset::after{content:'';position:absolute;inset:-13px -10px}
+.lc-list-viewport--discovery{padding-top:10px}
+.lc-button.lc-button--outline{border:var(--lc-stroke) solid var(--lc-border);background:var(--lc-white);height:var(--lc-compact-action-height);border-radius:var(--lc-radius-control);font-size:14px;line-height:20px;font-weight:500}
+.lc-discovery-empty{margin-top:56px}
+.lc-discovery-empty__reset{width:200px;margin-top:var(--lc-space-6)}
+.lc-pagination{display:grid;grid-template-columns:var(--lc-pagination-button-width) 1fr var(--lc-pagination-button-width);align-items:center;padding:7px var(--lc-space-5) 13px;background:var(--lc-white)}
+.lc-button.lc-pagination__button{width:var(--lc-pagination-button-width);height:var(--lc-compact-height);padding:0;border-radius:var(--lc-radius-compact)}
+.lc-button.lc-pagination__button:disabled{border-color:transparent;background:var(--lc-surface);color:var(--lc-muted);opacity:1}
+.lc-pagination__current{text-align:center;font-size:14px;line-height:20px;font-weight:500;color:var(--lc-ink)}
