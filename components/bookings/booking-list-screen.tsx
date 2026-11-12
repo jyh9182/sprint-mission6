@@ -11,22 +11,12 @@ import { ERROR_MESSAGES } from '@/lib/bookings/messages';
 import { NEW_BOOKING_HREF } from '@/lib/bookings/routes';
 import { getBookingPhase } from '@/lib/bookings/time';
 import { useBookings } from '@/lib/bookings/use-bookings';
+import { useNow } from '@/lib/bookings/use-now';
 
 // 예약 목록 `/bookings`. Figma 283:1588(기본) · 283:1659(0건) · 283:1716(초기화) · 283:1771(읽기 실패) · 283:1833(긴 목록).
 // 데이터는 LocalStorage 저장소(useBookings)에서만 읽는다. 서버 렌더링·첫 하이드레이션은 항상 초기화 중 상태다.
 
 const SCROLL_KEY = 'lessonconnect:bookings:list-scroll';
-const NOW_TICK_MS = 60_000;
-
-/** 진행 중·종료 파생 상태가 화면을 열어 둔 동안에도 바뀌도록 1분마다 현재 시각을 갱신한다. */
-function useNow() {
-  const [now, setNow] = React.useState(() => new Date());
-  React.useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), NOW_TICK_MS);
-    return () => window.clearInterval(timer);
-  }, []);
-  return now;
-}
 
 function readSavedScroll(): number {
   try {

@@ -98,3 +98,26 @@ dialog.lc-dialog::backdrop{background:var(--lc-backdrop);backdrop-filter:none}
 .lc-bottom-nav__tab{display:flex;flex-direction:column;align-items:center;gap:3px;width:var(--lc-hit-target);min-height:47px;border-radius:var(--lc-radius-control);font-size:11px;line-height:15px;font-weight:500;color:var(--lc-muted)}
 .lc-bottom-nav__tab[data-active]{color:var(--lc-ink)}
 .lc-bottom-nav__tab[aria-disabled=true]{cursor:default}
+/* 4단계 예약 상세 — Figma 286:1807 외 6개 상태, Card / Information 285:1808, Card / Memo 285:1828 */
+.lc-detail-viewport{min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;padding:var(--lc-space-2) var(--lc-space-5) var(--lc-space-6)}
+.lc-detail-content{display:flex;flex-direction:column;gap:var(--lc-space-4);min-width:0}
+.lc-detail-heading{display:flex;flex-direction:column;align-items:flex-start;gap:var(--lc-space-2);min-width:0}
+.lc-detail-heading__title{font-size:20px;line-height:29px;font-weight:700;letter-spacing:-.2px;overflow-wrap:anywhere}
+.lc-detail-heading__description{font-size:14px;line-height:21px;color:var(--lc-muted)}
+.lc-detail-card{display:flex;flex-direction:column;gap:var(--lc-space-3);padding:var(--lc-space-4);border:var(--lc-stroke) solid var(--lc-border);border-radius:var(--lc-radius-card);background:var(--lc-white);color:var(--lc-ink);min-width:0}
+.lc-detail-info{display:flex;flex-direction:column;gap:var(--lc-space-3);margin:0}
+.lc-detail-info__row{display:grid;grid-template-columns:62px minmax(0,1fr);column-gap:var(--lc-space-3);align-items:start}
+.lc-detail-info__label{font-size:12px;line-height:18px;font-weight:500;color:var(--lc-muted)}
+.lc-detail-info__value{margin:0;font-size:14px;line-height:21px;overflow-wrap:anywhere}
+.lc-detail-info__divider{display:block;height:var(--lc-stroke);background:var(--lc-border)}
+.lc-detail-memo{gap:var(--lc-space-2)}
+.lc-detail-memo__title{font-size:16px;line-height:24px;font-weight:700;letter-spacing:-.16px}
+.lc-detail-memo__text{font-size:14px;line-height:21px;white-space:pre-wrap;overflow-wrap:anywhere}
+.lc-detail-memo__text--empty{color:var(--lc-muted)}
+.lc-detail-manage{display:flex;flex-direction:column;gap:var(--lc-space-2)}
+.lc-detail-manage__title{font-size:16px;line-height:24px;font-weight:700;letter-spacing:-.16px}
+.lc-detail-manage .lc-alert{max-width:none}
+.lc-detail-state{margin-top:148px}
+.lc-detail-state--error{margin-top:72px}
+.lc-detail-wide{width:100%}
+.lc-detail-footer{border-top:var(--lc-stroke) solid var(--lc-nav-border);background:var(--lc-white);padding:var(--lc-space-3) var(--lc-space-5) calc(var(--lc-space-6) + var(--lc-space-2) + env(safe-area-inset-bottom))}

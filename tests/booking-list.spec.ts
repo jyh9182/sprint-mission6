@@ -80,7 +80,7 @@ test('최초 실행: 시드 1건을 저장소에서 읽어 카드·건수·링�
   const seed = stored.bookings[0];
   expect(seed.source).toBe('seed');
   const card = cards(page).first();
-  await expect(card).toHaveAttribute('href', `/bookings/${seed.id}`);
+  await expect(card).toHaveAttribute('href', `/bookings/detail?id=${seed.id}`);
   await expect(card).toContainText('김민준 선생님');
   await expect(card).toContainText('기타 · 60분');
   await expect(card).toContainText(`${formatLessonDate(seoulDate(Date.now() + 7 * DAY))} · 19:00–20:00`);
@@ -227,7 +227,7 @@ test('카드·CTA 키보드 조작, 포커스 링, 상세 경로, 뒤로 오면 
   await page.waitForTimeout(100);
   const target = cards(page).nth(5);
   const href = await target.getAttribute('href');
-  expect(href).toBe(`/bookings/${list[5].id}`);
+  expect(href).toBe(`/bookings/detail?id=${list[5].id}`);
   await target.focus();
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(new URL(href!, base).toString());

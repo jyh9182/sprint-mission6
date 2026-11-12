@@ -1,4 +1,5 @@
-import type { LessonBooking, LocalDate, LocalTime } from './types';
+import { GENRE_LABELS } from './catalog';
+import type { GenreId, LessonBooking, LocalDate, LocalTime } from './types';
 
 // 화면 표시용 순수 함수. 예약 snapshot만 사용하고 현재 카탈로그를 다시 조회하지 않는다.
 
@@ -32,4 +33,14 @@ export function formatInstrument(booking: Pick<LessonBooking, 'snapshot'>): stri
 
 export function formatSpace(booking: Pick<LessonBooking, 'snapshot'>): string {
   return `${booking.snapshot.studioName} · ${booking.snapshot.roomName}`;
+}
+
+/** `['rock', 'blues']` → `Rock · Blues`. 저장된 순서를 유지한다. */
+export function formatGenres(genres: readonly GenreId[]): string {
+  return genres.map((id) => GENRE_LABELS[id]).join(' · ');
+}
+
+/** 상세 제목. 호칭은 instructorDisplayName이 항상 `선생님`으로 끝내므로 조사는 `과`. */
+export function lessonTitle(instructorName: string): string {
+  return `${instructorDisplayName(instructorName)}과의 레슨`;
 }
